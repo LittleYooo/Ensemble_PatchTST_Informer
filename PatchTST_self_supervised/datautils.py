@@ -10,7 +10,7 @@ from src.data.datamodule import DataLoaders
 from src.data.pred_dataset import *
 
 DSETS = ['ettm1', 'ettm2', 'etth1', 'etth2', 'electricity',
-         'traffic', 'illness', 'weather', 'exchange'
+         'traffic', 'illness', 'weather', 'exchange', 'dim1', 'dim2', 'dim3'
         ]
 
 def get_dls(params):
