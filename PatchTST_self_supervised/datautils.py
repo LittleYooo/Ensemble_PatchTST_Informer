@@ -173,6 +173,58 @@ def get_dls(params):
                 batch_size=params.batch_size,
                 workers=params.num_workers,
                 )
+        
+    elif params.dset == 'dim1':
+        root_path = './dataset/'
+        size = [params.context_points, 0, params.target_points]
+        dls = DataLoaders(
+                datasetCls=Dataset_Custom,
+                dataset_kwargs={
+                'root_path': root_path,
+                'data_path': 'dim1.csv',
+                'features': params.features,
+                'scale': True,
+                'size': size,
+                'use_time_features': params.use_time_features
+                },
+                batch_size=params.batch_size,
+                workers=params.num_workers,
+                )
+        
+    elif params.dset == 'dim2':
+        root_path = './dataset/'
+        size = [params.context_points, 0, params.target_points]
+        dls = DataLoaders(
+                datasetCls=Dataset_Custom,
+                dataset_kwargs={
+                'root_path': root_path,
+                'data_path': 'dim2.csv',
+                'features': params.features,
+                'scale': True,
+                'size': size,
+                'use_time_features': params.use_time_features
+                },
+                batch_size=params.batch_size,
+                workers=params.num_workers,
+                )
+        
+    elif params.dset == 'dim3':
+        root_path = './dataset/'
+        size = [params.context_points, 0, params.target_points]
+        dls = DataLoaders(
+                datasetCls=Dataset_Custom,
+                dataset_kwargs={
+                'root_path': root_path,
+                'data_path': 'dim3.csv',
+                'features': params.features,
+                'scale': True,
+                'size': size,
+                'use_time_features': params.use_time_features
+                },
+                batch_size=params.batch_size,
+                workers=params.num_workers,
+                )
+        
     # dataset is assume to have dimension len x nvars
     dls.vars, dls.len = dls.train.dataset[0][0].shape[1], params.context_points
     dls.c = dls.train.dataset[0][1].shape[0]
