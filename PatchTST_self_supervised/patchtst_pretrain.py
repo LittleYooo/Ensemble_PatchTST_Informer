@@ -20,27 +20,27 @@ import argparse
 
 parser = argparse.ArgumentParser()
 # Dataset and dataloader
-parser.add_argument('--dset_pretrain', type=str, default='etth1', help='dataset name')
-parser.add_argument('--context_points', type=int, default=512, help='sequence length')
-parser.add_argument('--target_points', type=int, default=96, help='forecast horizon')
-parser.add_argument('--batch_size', type=int, default=64, help='batch size')
+parser.add_argument('--dset_pretrain', type=str, default='dim1', help='dataset name')
+parser.add_argument('--context_points', type=int, default=100, help='sequence length')
+parser.add_argument('--target_points', type=int, default=100, help='forecast horizon')
+parser.add_argument('--batch_size', type=int, default=32, help='batch size')
 parser.add_argument('--num_workers', type=int, default=0, help='number of workers for DataLoader')
 parser.add_argument('--scaler', type=str, default='standard', help='scale the input data')
 parser.add_argument('--features', type=str, default='M', help='for multivariate model or univariate model')
 # Patch
-parser.add_argument('--patch_len', type=int, default=12, help='patch length')
-parser.add_argument('--stride', type=int, default=12, help='stride between patch')
+parser.add_argument('--patch_len', type=int, default=10, help='patch length')
+parser.add_argument('--stride', type=int, default=10, help='stride between patch')
 # RevIN
 parser.add_argument('--revin', type=int, default=1, help='reversible instance normalization')
 # Model args
 parser.add_argument('--n_layers', type=int, default=3, help='number of Transformer layers')
 parser.add_argument('--n_heads', type=int, default=16, help='number of Transformer heads')
-parser.add_argument('--d_model', type=int, default=128, help='Transformer d_model')
-parser.add_argument('--d_ff', type=int, default=512, help='Tranformer MLP dimension')
+parser.add_argument('--d_model', type=int, default=64, help='Transformer d_model')
+parser.add_argument('--d_ff', type=int, default=256, help='Tranformer MLP dimension')
 parser.add_argument('--dropout', type=float, default=0.2, help='Transformer dropout')
 parser.add_argument('--head_dropout', type=float, default=0.2, help='head dropout')
 # Pretrain mask
-parser.add_argument('--mask_ratio', type=float, default=0.4, help='masking ratio for the input')
+parser.add_argument('--mask_ratio', type=float, default=0.1, help='masking ratio for the input')
 # Optimization args
 parser.add_argument('--n_epochs_pretrain', type=int, default=10, help='number of pre-training epochs')
 parser.add_argument('--lr', type=float, default=1e-4, help='learning rate')
