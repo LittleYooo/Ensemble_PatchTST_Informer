@@ -1,0 +1,5 @@
+score: [array(0.47612095, dtype=float32), array(0.3469857, dtype=float32)]
+
+score-dims: [[array(0.6408746, dtype=float32), array(0.33442757, dtype=float32)], [array(0.35463935, dtype=float32), array(0.3673713, dtype=float32)], [array(0.67731154, dtype=float32), array(0.40689397, dtype=float32)], [array(0.23011215, dtype=float32), array(0.3449815, dtype=float32)], [array(0.50502497, dtype=float32), array(0.30067536, dtype=float32)], [array(0.2897814, dtype=float32), array(0.31297222, dtype=float32)], [array(0.28954366, dtype=float32), array(0.31284383, dtype=float32)], [array(0.8216799, dtype=float32), array(0.39572003, dtype=float32)]]
+
+w-distance: [np.float64(0.10467331942753572), [np.float64(0.09921463624592888), np.float64(0.09060239725178097), np.float64(0.06274948092683164), np.float64(0.11901378164583049), np.float64(0.1085495796975606), np.float64(0.14896749978404553), np.float64(0.14890638569060782), np.float64(0.059382794177699885)]]

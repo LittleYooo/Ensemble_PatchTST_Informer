@@ -22,7 +22,7 @@ parser = argparse.ArgumentParser()
 # Dataset and dataloader
 parser.add_argument('--dset_pretrain', type=str, default='dim1', help='dataset name')
 parser.add_argument('--context_points', type=int, default=100, help='sequence length')
-parser.add_argument('--target_points', type=int, default=100, help='forecast horizon')
+parser.add_argument('--target_points', type=int, default=10, help='forecast horizon')
 parser.add_argument('--batch_size', type=int, default=32, help='batch size')
 parser.add_argument('--num_workers', type=int, default=0, help='number of workers for DataLoader')
 parser.add_argument('--scaler', type=str, default='standard', help='scale the input data')
@@ -143,7 +143,6 @@ def pretrain_func(lr=args.lr):
 
 
 if __name__ == '__main__':
-    
     args.dset = args.dset_pretrain
     suggested_lr = find_lr()
     # Pretrain

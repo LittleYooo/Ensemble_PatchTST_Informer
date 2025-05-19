@@ -246,7 +246,7 @@ class Learner(GetAttr):
         self.preds = cb.preds
         return to_numpy(self.preds) 
    
-    def compute_wasserstein_distance(predictions, labels):
+    def compute_wasserstein_distance(self, predictions, labels):
         """计算预测和真实值之间的Wasserstein距离"""
         w_distances = []
 
@@ -279,20 +279,22 @@ class Learner(GetAttr):
         self.preds, self.targets = to_numpy([cb.preds, cb.targets])
         
         # calculate Wasserstein distance
-        avg_w_dist, dim_w_dist = self.compute_wasserstein_distance(self.preds, self.targets)
+        avg_w_dist, dim_w_dist = self.compute_wasserstein_distance(
+            self.preds.reshape(-1, self.preds.shape[2]),
+            self.targets.reshape(-1, self.preds.shape[2])
+        )
         
         if scores:
             # calculate avg scores
             s_vals = [score(cb.targets, cb.preds).to('cpu').numpy() for score in list(scores)]
             # calculate avg scores
             s_dims_vals = []
-            for dim in range(self.targets.shape[1]):
-                s_dims_val = [score(cb.targets[:,dim], cb.preds[:,dim]).to('cpu').numpy() for score in list(scores)]
+            for dim in range(self.targets.shape[2]):
+                s_dims_val = [score(cb.targets[:,:,dim], cb.preds[:,:,dim]).to('cpu').numpy() for score in list(scores)]
                 s_dims_vals.append(s_dims_val)
             # print results
-            print(f"avg_w_dist: {avg_w_dist}, dim_w_dist: {dim_w_dist}")
-            print(f"s_vals: {s_vals}, s_dims_vals: {s_dims_vals}")
             return self.preds, self.targets, s_vals, s_dims_vals, [avg_w_dist, dim_w_dist]
+            # return self.preds, self.targets, s_vals, s_dims_vals
         else: 
             return self.preds, self.targets
 

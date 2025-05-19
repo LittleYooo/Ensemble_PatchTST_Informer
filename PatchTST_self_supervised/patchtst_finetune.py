@@ -25,7 +25,7 @@ parser.add_argument('--is_linear_probe', type=int, default=0, help='if linear_pr
 # Dataset and dataloader
 parser.add_argument('--dset_finetune', type=str, default='dim1', help='dataset name')
 parser.add_argument('--context_points', type=int, default=100, help='sequence length')
-parser.add_argument('--target_points', type=int, default=100, help='forecast horizon')
+parser.add_argument('--target_points', type=int, default=20, help='forecast horizon')
 parser.add_argument('--batch_size', type=int, default=32, help='batch size')
 parser.add_argument('--num_workers', type=int, default=0, help='number of workers for DataLoader')
 parser.add_argument('--scaler', type=str, default='standard', help='scale the input data')
@@ -199,6 +199,8 @@ def test_func(weight_path):
     learn = Learner(dls, model,cbs=cbs)
     out  = learn.test(dls.test, weight_path=weight_path+'.pth', scores=[mse,mae])         # out: a list of [pred, targ, score]
     print('score:', out[2])
+    print('score-dims:', out[3])
+    print('w-distance:', out[4])
     # save results
     pd.DataFrame(np.array(out[2]).reshape(1,-1), columns=['mse','mae']).to_csv(args.save_path + args.save_finetuned_model + '_acc.csv', float_format='%.6f', index=False)
     return out
