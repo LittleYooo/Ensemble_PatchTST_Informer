@@ -13,6 +13,7 @@ from .callback.distributed import *
 from .utils import *
 from pathlib import Path
 from tqdm import tqdm
+from scipy.stats import wasserstein_distance
 
 import numpy as np
 
@@ -245,6 +246,19 @@ class Learner(GetAttr):
         self.preds = cb.preds
         return to_numpy(self.preds) 
    
+    def compute_wasserstein_distance(predictions, labels):
+        """计算预测和真实值之间的Wasserstein距离"""
+        w_distances = []
+
+        # 对每个维度分别计算
+        for dim in range(labels.shape[1]):
+            w_dist = wasserstein_distance(predictions[:, dim], labels[:, dim])
+            w_distances.append(w_dist)
+
+        # 计算总体Wasserstein距离(所有维度的平均)
+        avg_w_dist = np.mean(w_distances)
+
+        return avg_w_dist, w_distances
     
     def test(self, dl, weight_path=None, scores=None):
         """_summary_
@@ -263,11 +277,24 @@ class Learner(GetAttr):
         with torch.no_grad(): self.all_batches('test')
         self('after_test')   
         self.preds, self.targets = to_numpy([cb.preds, cb.targets])
-        # calculate scores
-        if scores: 
+        
+        # calculate Wasserstein distance
+        avg_w_dist, dim_w_dist = self.compute_wasserstein_distance(self.preds, self.targets)
+        
+        if scores:
+            # calculate avg scores
             s_vals = [score(cb.targets, cb.preds).to('cpu').numpy() for score in list(scores)]
-            return self.preds, self.targets, s_vals
-        else: return self.preds, self.targets
+            # calculate avg scores
+            s_dims_vals = []
+            for dim in range(self.targets.shape[1]):
+                s_dims_val = [score(cb.targets[:,dim], cb.preds[:,dim]).to('cpu').numpy() for score in list(scores)]
+                s_dims_vals.append(s_dims_val)
+            # print results
+            print(f"avg_w_dist: {avg_w_dist}, dim_w_dist: {dim_w_dist}")
+            print(f"s_vals: {s_vals}, s_dims_vals: {s_dims_vals}")
+            return self.preds, self.targets, s_vals, s_dims_vals, [avg_w_dist, dim_w_dist]
+        else: 
+            return self.preds, self.targets
 
 
     def _prepare_data(self, test_data, Dataset=None, Dataloader=None, batch_size=None):
