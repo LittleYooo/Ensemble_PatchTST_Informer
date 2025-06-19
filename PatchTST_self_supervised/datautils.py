@@ -15,72 +15,36 @@ DSETS = ['ettm1', 'ettm2', 'etth1', 'etth2', 'electricity',
 
 def get_dls(params):
     
-    assert params.dset in DSETS, f"Unrecognized dset (`{params.dset}`). Options include: {DSETS}"
+    # assert params.dset in DSETS, f"Unrecognized dset (`{params.dset}`). Options include: {DSETS}"
     if not hasattr(params,'use_time_features'): params.use_time_features = False
-
-    if params.dset == 'ettm1':
-        root_path = '/data/datasets/public/ETDataset/ETT-small/'
+        
+    if params.dset == 'source_domain':
+        root_path = './dataset/'
         size = [params.context_points, 0, params.target_points]
         dls = DataLoaders(
-                datasetCls=Dataset_ETT_minute,
-                dataset_kwargs={
+                datasetCls=Dataset_Custom,      # dataset class: 数据集类
+                dataset_kwargs={                # dataset key word args
                 'root_path': root_path,
-                'data_path': 'ETTm1.csv',
-                'features': params.features,
-                'scale': True,
-                'size': size,
-                'use_time_features': params.use_time_features
+                'data_path': 'source_domain.csv',
+                'features': params.features,    # M MS S
+                'scale': True, # True           # scale 处理
+                'size': size,                   # [100, 0, 100]
+                'use_time_features': params.use_time_features # False
                 },
-                batch_size=params.batch_size,
-                workers=params.num_workers,
+                batch_size=params.batch_size,   # 32
+                workers=params.num_workers,     # number of workers
                 )
 
-
-    elif params.dset == 'ettm2':
-        root_path = '/data/datasets/public/ETDataset/ETT-small/'
+    elif params.dset == 'processed_data_55':
+        root_path = './dataset/'
         size = [params.context_points, 0, params.target_points]
         dls = DataLoaders(
-                datasetCls=Dataset_ETT_minute,
+                datasetCls=Dataset_Custom,
                 dataset_kwargs={
                 'root_path': root_path,
-                'data_path': 'ETTm2.csv',
+                'data_path': 'processed_data_55.csv',
                 'features': params.features,
-                'scale': True,
-                'size': size,
-                'use_time_features': params.use_time_features
-                },
-                batch_size=params.batch_size,
-                workers=params.num_workers,
-                )
-
-    elif params.dset == 'etth1':
-        root_path = '/data/datasets/public/ETDataset/ETT-small/'
-        size = [params.context_points, 0, params.target_points]
-        dls = DataLoaders(
-                datasetCls=Dataset_ETT_hour,
-                dataset_kwargs={
-                'root_path': root_path,
-                'data_path': 'ETTh1.csv',
-                'features': params.features,
-                'scale': True,
-                'size': size,
-                'use_time_features': params.use_time_features
-                },
-                batch_size=params.batch_size,
-                workers=params.num_workers,
-                )
-
-
-    elif params.dset == 'etth2':
-        root_path = '/data/datasets/public/ETDataset/ETT-small/'
-        size = [params.context_points, 0, params.target_points]
-        dls = DataLoaders(
-                datasetCls=Dataset_ETT_hour,
-                dataset_kwargs={
-                'root_path': root_path,
-                'data_path': 'ETTh2.csv',
-                'features': params.features,
-                'scale': True,
+                'scale': True, # True
                 'size': size,
                 'use_time_features': params.use_time_features
                 },
@@ -88,138 +52,54 @@ def get_dls(params):
                 workers=params.num_workers,
                 )
     
-
-    elif params.dset == 'electricity':
-        root_path = '/data/datasets/public/electricity/'
-        size = [params.context_points, 0, params.target_points]
-        dls = DataLoaders(
-                datasetCls=Dataset_Custom,
-                dataset_kwargs={
-                'root_path': root_path,
-                'data_path': 'electricity.csv',
-                'features': params.features,
-                'scale': True,
-                'size': size,
-                'use_time_features': params.use_time_features
-                },
-                batch_size=params.batch_size,
-                workers=params.num_workers,
-                )
-
-    elif params.dset == 'traffic':
-        root_path = '/data/datasets/public/traffic/'
-        size = [params.context_points, 0, params.target_points]
-        dls = DataLoaders(
-                datasetCls=Dataset_Custom,
-                dataset_kwargs={
-                'root_path': root_path,
-                'data_path': 'traffic.csv',
-                'features': params.features,
-                'scale': True,
-                'size': size,
-                'use_time_features': params.use_time_features
-                },
-                batch_size=params.batch_size,
-                workers=params.num_workers,
-                )
-    
-    elif params.dset == 'weather':
-        root_path = '/data/datasets/public/weather/'
-        size = [params.context_points, 0, params.target_points]
-        dls = DataLoaders(
-                datasetCls=Dataset_Custom,
-                dataset_kwargs={
-                'root_path': root_path,
-                'data_path': 'weather.csv',
-                'features': params.features,
-                'scale': True,
-                'size': size,
-                'use_time_features': params.use_time_features
-                },
-                batch_size=params.batch_size,
-                workers=params.num_workers,
-                )
-
-    elif params.dset == 'illness':
-        root_path = '/data/datasets/public/illness/'
-        size = [params.context_points, 0, params.target_points]
-        dls = DataLoaders(
-                datasetCls=Dataset_Custom,
-                dataset_kwargs={
-                'root_path': root_path,
-                'data_path': 'national_illness.csv',
-                'features': params.features,
-                'scale': True,
-                'size': size,
-                'use_time_features': params.use_time_features
-                },
-                batch_size=params.batch_size,
-                workers=params.num_workers,
-                )
-
-    elif params.dset == 'exchange':
-        root_path = '/data/datasets/public/exchange_rate/'
-        size = [params.context_points, 0, params.target_points]
-        dls = DataLoaders(
-                datasetCls=Dataset_Custom,
-                dataset_kwargs={
-                'root_path': root_path,
-                'data_path': 'exchange_rate.csv',
-                'features': params.features,
-                'scale': True,
-                'size': size,
-                'use_time_features': params.use_time_features
-                },
-                batch_size=params.batch_size,
-                workers=params.num_workers,
-                )
-        
-    elif params.dset == 'dim1':
+    elif params.dset == 's0.3548_m907':
         root_path = './dataset/'
         size = [params.context_points, 0, params.target_points]
         dls = DataLoaders(
                 datasetCls=Dataset_Custom,
                 dataset_kwargs={
                 'root_path': root_path,
-                'data_path': 'dim1.csv',
+                'data_path': 's0.3548_m907.csv',
                 'features': params.features,
-                'scale': True,
+                'scale': True, # True
                 'size': size,
                 'use_time_features': params.use_time_features
                 },
                 batch_size=params.batch_size,
                 workers=params.num_workers,
                 )
-        
-    elif params.dset == 'dim2':
+
+    elif params.dset == 'CAV-H':
         root_path = './dataset/'
         size = [params.context_points, 0, params.target_points]
         dls = DataLoaders(
                 datasetCls=Dataset_Custom,
                 dataset_kwargs={
                 'root_path': root_path,
-                'data_path': 'dim2.csv',
+                'data_path': 'CAV-H.csv',
                 'features': params.features,
-                'scale': True,
+                'scale': True, # True
                 'size': size,
                 'use_time_features': params.use_time_features
                 },
                 batch_size=params.batch_size,
                 workers=params.num_workers,
                 )
-        
-    elif params.dset == 'dim3':
+
+    elif params.dset == 'HTV2':
         root_path = './dataset/'
         size = [params.context_points, 0, params.target_points]
         dls = DataLoaders(
                 datasetCls=Dataset_Custom,
                 dataset_kwargs={
                 'root_path': root_path,
-                'data_path': 'dim3.csv',
+                'data_path': 'HTV2.csv',
                 'features': params.features,
-                'scale': True,
+                'scale': True, # True
                 'size': size,
-                'use_time_features': params.use_time_features
+                'use_time_features': params.use_time_features,
+                "train_split": 0.05,
+                "test_split": 0.9
                 },
                 batch_size=params.batch_size,
                 workers=params.num_workers,
@@ -228,21 +108,50 @@ def get_dls(params):
     # dataset is assume to have dimension len x nvars
     dls.vars, dls.len = dls.train.dataset[0][0].shape[1], params.context_points
     dls.c = dls.train.dataset[0][1].shape[0]
+    # dls.vars = 9, dls.len = 3, dls.c = 2
     return dls
 
-
-
 if __name__ == "__main__":
+    
     class Params:
-        dset= 'etth2'
-        context_points= 384
-        target_points= 96
-        batch_size= 64
-        num_workers= 8
+        dset= 'dim1'
+        context_points= 3
+        target_points= 3
+        batch_size= 8
+        num_workers= 0
         with_ray= False
         features='M'
     params = Params 
     dls = get_dls(params)
-    for i, batch in enumerate(dls.valid):
+
+    print('dls.train.length', len(dls.train)) # 2
+    print('dls.test.length', len(dls.test)) # 2
+    # print('dls.valid.length', len(dls.valid)) # 2
+
+    # print('dls.train', dls.train)
+
+    
+    for i, batch in enumerate(dls.train):
+        print(batch)
         print(i, len(batch), batch[0].shape, batch[1].shape)
-    breakpoint()
+
+    print()
+    print('========================')
+    print()
+
+    # for i, batch in enumerate(dls.valid):
+    #     print(i, len(batch), batch[0].shape, batch[1].shape)
+
+    # print()
+    # print('========================')
+    # print()
+
+    '''
+        enumerate():
+            用于将一个可遍历的数据对象(如列表、元组或字符串)组合为一个索引序列，同时列出数据和数据下标，一般用在 for 循环当中。
+    '''
+    for i, batch in enumerate(dls.test):
+        print(batch)
+        print(i, len(batch), batch[0].shape, batch[1].shape)
+        
+    # breakpoint()

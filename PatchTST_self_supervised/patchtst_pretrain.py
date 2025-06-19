@@ -20,9 +20,9 @@ import argparse
 
 parser = argparse.ArgumentParser()
 # Dataset and dataloader
-parser.add_argument('--dset_pretrain', type=str, default='dim1', help='dataset name')
+parser.add_argument('--dset_pretrain', type=str, default='source_domain', help='dataset name')
 parser.add_argument('--context_points', type=int, default=100, help='sequence length')
-parser.add_argument('--target_points', type=int, default=10, help='forecast horizon')
+parser.add_argument('--target_points', type=int, default=100, help='forecast horizon')
 parser.add_argument('--batch_size', type=int, default=32, help='batch size')
 parser.add_argument('--num_workers', type=int, default=0, help='number of workers for DataLoader')
 parser.add_argument('--scaler', type=str, default='standard', help='scale the input data')
@@ -59,32 +59,32 @@ if not os.path.exists(args.save_path): os.makedirs(args.save_path)
 # get available GPU devide
 set_device()
 
-
 def get_model(c_in, args):
     """
-    c_in: number of variables
+    c_in: number of variables equals 10
     """
     # get number of patches
-    num_patch = (max(args.context_points, args.patch_len)-args.patch_len) // args.stride + 1    
+    num_patch = (max(args.context_points, args.patch_len)-args.patch_len) // args.stride + 1 
+
     print('number of patches:', num_patch)
     
     # get model
-    model = PatchTST(c_in=c_in,
-                target_dim=args.target_points,
-                patch_len=args.patch_len,
-                stride=args.stride,
-                num_patch=num_patch,
-                n_layers=args.n_layers,
-                n_heads=args.n_heads,
-                d_model=args.d_model,
-                shared_embedding=True,
-                d_ff=args.d_ff,                        
-                dropout=args.dropout,
-                head_dropout=args.head_dropout,
-                act='relu',
-                head_type='pretrain',
-                res_attention=False
-                )        
+    model = PatchTST(c_in=c_in,         # feature dimension 9
+        target_dim=args.target_points,  # target_dim/target_points
+        patch_len=args.patch_len,       # patch_len
+        stride=args.stride,             # stride
+        num_patch=num_patch,            # 1
+        n_layers=args.n_layers,
+        n_heads=args.n_heads,
+        d_model=args.d_model,
+        shared_embedding=True,
+        d_ff=args.d_ff,                        
+        dropout=args.dropout,
+        head_dropout=args.head_dropout,
+        act='relu',
+        head_type='pretrain',
+        res_attention=False
+    )        
     # print out the model size
     print('number of model params', sum(p.numel() for p in model.parameters() if p.requires_grad))
     return model
@@ -122,31 +122,35 @@ def pretrain_func(lr=args.lr):
     # get callbacks
     cbs = [RevInCB(dls.vars, denorm=False)] if args.revin else []
     cbs += [
-         PatchMaskCB(patch_len=args.patch_len, stride=args.stride, mask_ratio=args.mask_ratio),
-         SaveModelCB(monitor='valid_loss', fname=args.save_pretrained_model,                       
-                        path=args.save_path)
-        ]
+        PatchMaskCB(patch_len=args.patch_len, stride=args.stride, mask_ratio=args.mask_ratio),
+        SaveModelCB(monitor='valid_loss', fname=args.save_pretrained_model, path=args.save_path)
+    ]
     # define learner
     learn = Learner(dls, model, 
-                        loss_func, 
-                        lr=lr, 
-                        cbs=cbs,
-                        #metrics=[mse]
-                        )                        
+        loss_func, 
+        lr=lr, 
+        cbs=cbs,
+        #metrics=[mse]
+    )                        
     # fit the data to the model
     learn.fit_one_cycle(n_epochs=args.n_epochs_pretrain, lr_max=lr)
 
     train_loss = learn.recorder['train_loss']
     valid_loss = learn.recorder['valid_loss']
+
     df = pd.DataFrame(data={'train_loss': train_loss, 'valid_loss': valid_loss})
     df.to_csv(args.save_path + args.save_pretrained_model + '_losses.csv', float_format='%.6f', index=False)
 
 
 if __name__ == '__main__':
-    args.dset = args.dset_pretrain
+
+    args.dset = args.dset_pretrain # source_domain.csv
+
     suggested_lr = find_lr()
+
     # Pretrain
     pretrain_func(suggested_lr)
+
     print('pretraining completed')
     
 

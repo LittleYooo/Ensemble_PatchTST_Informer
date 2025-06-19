@@ -12,11 +12,17 @@ python patchtst_pretrain.py --dset dim1
 python patchtst_finetune.py --dset dim1 --is_finetune 1 --pretrained_model <module_name>
 
 # example
-python patchtst_finetune.py --dset dim1 --is_finetune 1 --pretrained_mode saved_models/dim1/masked_patchtst/based_model/patchtst_pretrained_cw100_patch10_stride10_epochs-pretrain10_mask0.1_model1.pth
+python patchtst_finetune.py --dset HTV2 --is_finetune 1 --pretrained_mode saved_models/dim1/masked_patchtst/based_model/patchtst_pretrained_cw100_patch10_stride10_epochs-pretrain10_mask0.1_model1.pth
+python patchtst_finetune.py --dset processed_data_55 --is_finetune 1 --pretrained_mode saved_models/dim1/masked_patchtst/based_model/patchtst_pretrained_cw100_patch10_stride10_epochs-pretrain10_mask0.1_model1.pth
+python patchtst_finetune.py --dset s0.3548_m907 --is_finetune 1 --pretrained_mode saved_models/dim1/masked_patchtst/based_model/patchtst_pretrained_cw100_patch10_stride10_epochs-pretrain10_mask0.1_model1.pth
 ```
 
 - test script
 
 ```sh
-python patchtst_finetune.py --dset dim1 --pretrained_model <module_name>
+python patchtst_finetune.py --dset HTV2 --is_linear_probe 1 --pretrained_model saved_models/dim1/masked_patchtst/based_model/patchtst_pretrained_cw100_patch10_stride10_epochs-pretrain10_mask0.1_model1.pth
+
+python patchtst_finetune.py --dset HTV2 --is_only_test 1 --pretrained_mode saved_models/dim1/masked_patchtst/based_model/patchtst_pretrained_cw100_patch10_stride10_epochs-pretrain10_mask0.1_model1.pth
+python patchtst_finetune.py --dset processed_data_55 --pretrained_mode saved_models/dim1/masked_patchtst/based_model/patchtst_pretrained_cw100_patch10_stride10_epochs-pretrain10_mask0.1_model1.pth
+python patchtst_finetune.py --dset s0.3548_m907  --pretrained_model saved_models/dim1/masked_patchtst/based_model/patchtst_pretrained_cw100_patch10_stride10_epochs-pretrain10_mask0.1_model1.pth
 ```

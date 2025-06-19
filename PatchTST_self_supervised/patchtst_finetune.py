@@ -25,7 +25,7 @@ parser.add_argument('--is_linear_probe', type=int, default=0, help='if linear_pr
 # Dataset and dataloader
 parser.add_argument('--dset_finetune', type=str, default='dim1', help='dataset name')
 parser.add_argument('--context_points', type=int, default=100, help='sequence length')
-parser.add_argument('--target_points', type=int, default=20, help='forecast horizon')
+parser.add_argument('--target_points', type=int, default=100, help='forecast horizon')
 parser.add_argument('--batch_size', type=int, default=32, help='batch size')
 parser.add_argument('--num_workers', type=int, default=0, help='number of workers for DataLoader')
 parser.add_argument('--scaler', type=str, default='standard', help='scale the input data')
@@ -59,8 +59,12 @@ if not os.path.exists(args.save_path): os.makedirs(args.save_path)
 
 # args.save_finetuned_model = '_cw'+str(args.context_points)+'_tw'+str(args.target_points) + '_patch'+str(args.patch_len) + '_stride'+str(args.stride) + '_epochs-finetune' + str(args.n_epochs_finetune) + '_mask' + str(args.mask_ratio)  + '_model' + str(args.finetuned_model_id)
 suffix_name = '_cw'+str(args.context_points)+'_tw'+str(args.target_points) + '_patch'+str(args.patch_len) + '_stride'+str(args.stride) + '_epochs-finetune' + str(args.n_epochs_finetune) + '_model' + str(args.finetuned_model_id)
+
+# 进行fine-tune 微调
 if args.is_finetune: args.save_finetuned_model = args.dset_finetune+'_patchtst_finetuned'+suffix_name
+# 进行linear-probe 线性探测
 elif args.is_linear_probe: args.save_finetuned_model = args.dset_finetune+'_patchtst_linear-probe'+suffix_name
+# 其他
 else: args.save_finetuned_model = args.dset_finetune+'_patchtst_finetuned'+suffix_name
 
 # get available GPU devide
