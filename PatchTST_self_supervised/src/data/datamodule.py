@@ -21,6 +21,7 @@ class DataLoaders:
         
         if "split" in dataset_kwargs.keys():
             del dataset_kwargs["split"]
+            
         self.dataset_kwargs = dataset_kwargs
         self.workers = workers
         self.collate_fn = collate_fn
@@ -34,9 +35,11 @@ class DataLoaders:
     def train_dataloader(self):
         return self._make_dloader("train", shuffle=self.shuffle_train)
 
-    def val_dataloader(self):        
+    # valid 验证集
+    def val_dataloader(self):
         return self._make_dloader("val", shuffle=self.shuffle_val)
 
+    # 测试集
     def test_dataloader(self):
         return self._make_dloader("test", shuffle=False)
 

@@ -17,33 +17,66 @@ from ..models.layers.attention import *
             
 # Cell
 class PatchTST(nn.Module):
+
     """
     Output dimension: 
          [bs x target_dim x nvars] for prediction
-         [bs x target_dim] for regression
-         [bs x target_dim] for classification
+         [bs x target_dim X 1] for regression
+         [bs x target_dim x 1] for classification
          [bs x num_patch x n_vars x patch_len] for pretrain
     """
-    def __init__(self, c_in:int, target_dim:int, patch_len:int, stride:int, num_patch:int, 
-                 n_layers:int=3, d_model=128, n_heads=16, shared_embedding=True, d_ff:int=256, 
-                 norm:str='BatchNorm', attn_dropout:float=0., dropout:float=0., act:str="gelu", 
-                 res_attention:bool=True, pre_norm:bool=False, store_attn:bool=False,
-                 pe:str='zeros', learn_pe:bool=True, head_dropout = 0, 
-                 head_type = "prediction", individual = False, 
-                 y_range:Optional[tuple]=None, verbose:bool=False, **kwargs):
+
+    def __init__(self, 
+        c_in:int, 
+        target_dim:int,     # target_context 100
+        patch_len:int,      # 100
+        stride:int,         # 10
+        num_patch:int,      # 1
+        n_layers:int=3, 
+        d_model=128, 
+        n_heads=16, 
+        shared_embedding=True, 
+        d_ff:int=256, 
+        norm:str='BatchNorm', 
+        attn_dropout:float=0., 
+        dropout:float=0., 
+        act:str="gelu", 
+        res_attention:bool=True, 
+        pre_norm:bool=False, 
+        store_attn:bool=False,
+        pe:str='zeros', 
+        learn_pe:bool=True, 
+        head_dropout = 0, 
+        head_type = "prediction",
+        individual = False, 
+        y_range:Optional[tuple]=None, 
+        verbose:bool=False, 
+        **kwargs
+    ):
 
         super().__init__()
 
         assert head_type in ['pretrain', 'prediction', 'regression', 'classification'], 'head type should be either pretrain, prediction, or regression'
-        # Backbone
-        self.backbone = PatchTSTEncoder(c_in, num_patch=num_patch, patch_len=patch_len, 
-                                n_layers=n_layers, d_model=d_model, n_heads=n_heads, 
-                                shared_embedding=shared_embedding, d_ff=d_ff,
-                                attn_dropout=attn_dropout, dropout=dropout, act=act, 
-                                res_attention=res_attention, pre_norm=pre_norm, store_attn=store_attn,
-                                pe=pe, learn_pe=learn_pe, verbose=verbose, **kwargs)
+        
+        # Part One: Backbone
+        self.backbone = PatchTSTEncoder(
+            c_in,       # c_in: input feature dimension, e.g., 9
+            num_patch=num_patch,
+            patch_len=patch_len,
+            n_layers=n_layers,
+            d_model=d_model,
+            n_heads=n_heads,
+            shared_embedding=shared_embedding, d_ff=d_ff,
+            attn_dropout=attn_dropout, dropout=dropout, act=act,
+            res_attention=res_attention, pre_norm=pre_norm, store_attn=store_attn,
+            pe=pe,
+            learn_pe=learn_pe,
+            verbose=verbose,
+            **kwargs
+        )
 
-        # Head
+        # Part Two: Head
+
         self.n_vars = c_in
         self.head_type = head_type
 
@@ -116,8 +149,8 @@ class PredictionHead(nn.Module):
 
         self.individual = individual
         self.n_vars = n_vars
-        self.flatten = flatten
-        head_dim = d_model*num_patch
+        self.flatten = flatten       #
+        head_dim = d_model*num_patch # 640
 
         if self.individual:
             self.linears = nn.ModuleList()
@@ -129,7 +162,7 @@ class PredictionHead(nn.Module):
                 self.dropouts.append(nn.Dropout(head_dropout))
         else:
             self.flatten = nn.Flatten(start_dim=-2)
-            self.linear = nn.Linear(head_dim, forecast_len)
+            self.linear = nn.Linear(head_dim, forecast_len)  # (640, 100)
             self.dropout = nn.Dropout(head_dropout)
 
 
@@ -147,9 +180,9 @@ class PredictionHead(nn.Module):
                 x_out.append(z)
             x = torch.stack(x_out, dim=1)         # x: [bs x nvars x forecast_len]
         else:
-            x = self.flatten(x)     # x: [bs x nvars x (d_model * num_patch)]    
+            x = self.flatten(x)     # x: [bs x nvars x (d_model * num_patch)]   （bs x 9 x 640） 
             x = self.dropout(x)
-            x = self.linear(x)      # x: [bs x nvars x forecast_len]
+            x = self.linear(x)      # x: [bs x nvars x forecast_len] (bs x 9 x 100)
         return x.transpose(2,1)     # [bs x forecast_len x nvars]
 
 
@@ -157,26 +190,43 @@ class PretrainHead(nn.Module):
     def __init__(self, d_model, patch_len, dropout):
         super().__init__()
         self.dropout = nn.Dropout(dropout)
-        self.linear = nn.Linear(d_model, patch_len)
+        self.linear = nn.Linear(d_model, patch_len) # (64, 10)
 
     def forward(self, x):
         """
-        x: tensor [bs x nvars x d_model x num_patch]
+        x: tensor [bs x nvars x d_model x num_patch] input x (bs x 9 x 64 x 10)
         output: tensor [bs x nvars x num_patch x patch_len]
         """
 
-        x = x.transpose(2,3)                     # [bs x nvars x num_patch x d_model]
-        x = self.linear( self.dropout(x) )      # [bs x nvars x num_patch x patch_len]
-        x = x.permute(0,2,1,3)                  # [bs x num_patch x nvars x patch_len]
+        x = x.transpose(2,3)                     # [bs x nvars x num_patch x d_model] (10, 64)
+        x = self.linear( self.dropout(x) )      # [bs x nvars x num_patch x patch_len] (64, 10)
+        x = x.permute(0,2,1,3)                  # [bs x num_patch x nvars x patch_len] (10, 10)
         return x
 
 
 class PatchTSTEncoder(nn.Module):
-    def __init__(self, c_in, num_patch, patch_len, 
-                 n_layers=3, d_model=128, n_heads=16, shared_embedding=True,
-                 d_ff=256, norm='BatchNorm', attn_dropout=0., dropout=0., act="gelu", store_attn=False,
-                 res_attention=True, pre_norm=False,
-                 pe='zeros', learn_pe=True, verbose=False, **kwargs):
+
+    def __init__(self, 
+        c_in, 
+        num_patch, 
+        patch_len, 
+        n_layers=3,
+        d_model=128, 
+        n_heads=16, 
+        shared_embedding=True,
+        d_ff=256, 
+        norm='BatchNorm', 
+        attn_dropout=0., 
+        dropout=0., 
+        act="gelu", 
+        store_attn=False,
+        res_attention=True, 
+        pre_norm=False,
+        pe='zeros', 
+        learn_pe=True, 
+        verbose=False, 
+        **kwargs
+    ):
 
         super().__init__()
         self.n_vars = c_in
@@ -199,11 +249,21 @@ class PatchTSTEncoder(nn.Module):
         self.dropout = nn.Dropout(dropout)
 
         # Encoder
-        self.encoder = TSTEncoder(d_model, n_heads, d_ff=d_ff, norm=norm, attn_dropout=attn_dropout, dropout=dropout,
-                                   pre_norm=pre_norm, activation=act, res_attention=res_attention, n_layers=n_layers, 
-                                    store_attn=store_attn)
+        self.encoder = TSTEncoder(
+            d_model, # 128
+            n_heads, # 16
+            d_ff=d_ff, # 256
+            norm=norm, 
+            attn_dropout=attn_dropout, 
+            dropout=dropout,
+            pre_norm=pre_norm, 
+            activation=act, 
+            res_attention=res_attention, 
+            n_layers=n_layers, 
+            store_attn=store_attn
+        )
 
-    def forward(self, x) -> Tensor:          
+    def forward(self, x) -> Tensor:
         """
         x: tensor [bs x num_patch x nvars x patch_len]
         """

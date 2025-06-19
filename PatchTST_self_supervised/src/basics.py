@@ -2,7 +2,7 @@
 import torch
 
 import collections
-from collections import OrderedDict
+from collections import OrderedDict # OrderDict的介绍 https://blog.csdn.net/longshaonihaoa/article/details/108469859
 
 class GetAttr:
 
@@ -30,7 +30,7 @@ class GetAttr:
         self.__dict__.update(data)
 
 
-
+# 获取 GPU device
 def get_device(use_cuda=True, device_id=None, usage=5):
     "Return or set default device; `use_cuda`: None - CUDA if available; True - error if not available; False - CPU"
     if not torch.cuda.is_available():

@@ -475,14 +475,21 @@ def get_model(model):
     "Return the model maybe wrapped inside `model`."    
     return model.module if isinstance(model, (DistributedDataParallel, nn.DataParallel)) else model
 
+''' 
+    权重迁移
 
+        weights_path: 权重路径
+        model: 模型
+        exclude_head: 是否排除head层
+        device: cpu or gpu
+
+'''
 def transfer_weights(weights_path, model, exclude_head=True, device='cpu'):
     # state_dict = model.state_dict()
     new_state_dict = torch.load(weights_path, map_location=device)
-    #print('new_state_dict',new_state_dict)
     matched_layers = 0
     unmatched_layers = []
-    for name, param in model.state_dict().items():        
+    for name, param in model.state_dict().items(): 
         if exclude_head and 'head' in name: continue
         if name in new_state_dict:            
             matched_layers += 1
