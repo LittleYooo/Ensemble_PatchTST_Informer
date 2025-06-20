@@ -33,7 +33,7 @@ python patchtst_finetune.py --dset HTV2 --is_finetune 1 --pretrained_mode saved_
 python patchtst_finetune.py --dset processed_data_55 --is_finetune 1 --pretrained_mode saved_models/source_domain/masked_patchtst/based_model/patchtst_pretrained_cw100_patch10_stride10_epochs-pretrain10_mask0.1_model1.pth
 ```
 
-## 二、结果输出
+## 二、结果保存
 
 > 以 `processed_data_55为例`
 > 
@@ -54,3 +54,16 @@ python patchtst_finetune.py --dset processed_data_55 --is_finetune 1 --pretraine
 3. w_distance_9dim.csv
 
 微调后，整体的w-distance以及9个feature的各自w-distance
+
+
+## 三、模型保存
+
+> 以 `processed_data_55为例`
+> 
+> - `base_dir`: saved_models\processed_data_55\masked_patchtst\based_model\xxx
+> - 文件路径中包含fine-tuned为整体微调的结果以及模型
+> - 文件路径中包含linear-probe为仅微调head的结果以及模型
+
+
+> 源域预训练的模型保存在
+>`saved_models\source_domain\masked_patchtst\based_model\patchtst_pretrained_cw100_patch10_stride10_epochs-pretrain10_mask0.1_model1.pth`
