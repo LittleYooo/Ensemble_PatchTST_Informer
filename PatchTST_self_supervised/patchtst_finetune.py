@@ -192,6 +192,14 @@ def linear_probe_func(lr=args.lr):
     learn.linear_probe(n_epochs=args.n_epochs_finetune, base_lr=lr)
     save_recorders(learn)
 
+def save_format_result(out):
+    # 输出9维的mse,mae
+    pd.DataFrame(np.array(out[3]).reshape(9,-1), columns=['mse','mae']).to_csv(args.save_path + args.save_finetuned_model + '_acc_9dim.csv', float_format='%.6f', index=False)
+    # 输出平均w-distance
+    # pd.DataFrame(np.array(out[4][0]).reshape(1,-1), columns=['w-distance']).to_csv(args.save_path + args.save_finetuned_model + '_acc_w_distance.csv', float_format='%.6f', index=False)
+    # 输出9维w-distance
+    pd.DataFrame(data={'avg w-distance': out[4][0], 'each dim w-distance': out[4][1]}).to_csv(args.save_path + args.save_finetuned_model + '_acc_w_distance_9dim.csv', float_format='%.6f', index=False)
+    # pd.DataFrame(np.array(out[4][1]).reshape(1,-1), columns=['mse','mae']).to_csv(args.save_path + args.save_finetuned_model + '_acc_w_distance_9dim.csv', float_format='%.6f', index=False)
 
 def test_func(weight_path):
     # get dataloader
@@ -202,11 +210,10 @@ def test_func(weight_path):
     cbs += [PatchCB(patch_len=args.patch_len, stride=args.stride)]
     learn = Learner(dls, model,cbs=cbs)
     out  = learn.test(dls.test, weight_path=weight_path+'.pth', scores=[mse,mae])         # out: a list of [pred, targ, score]
-    print('score:', out[2])
-    print('score-dims:', out[3])
-    print('w-distance:', out[4])
     # save results
     pd.DataFrame(np.array(out[2]).reshape(1,-1), columns=['mse','mae']).to_csv(args.save_path + args.save_finetuned_model + '_acc.csv', float_format='%.6f', index=False)
+    # save target results
+    save_format_result(out)
     return out
 
 
