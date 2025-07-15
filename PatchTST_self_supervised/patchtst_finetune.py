@@ -31,10 +31,12 @@ parser.add_argument('--num_workers', type=int, default=0, help='number of worker
 parser.add_argument('--scaler', type=str, default='standard', help='scale the input data')
 parser.add_argument('--features', type=str, default='M', help='for multivariate model or univariate model')
 # Patch
-parser.add_argument('--patch_len', type=int, default=10, help='patch length')
-parser.add_argument('--stride', type=int, default=10, help='stride between patch')
+parser.add_argument('--patch_len', type=int, default=20, help='patch length')
+parser.add_argument('--stride', type=int, default=20, help='stride between patch')
 # RevIN
 parser.add_argument('--revin', type=int, default=1, help='reversible instance normalization')
+# use time feature
+parser.add_argument('--use_time_features', type=int, default=0, help='use time feature')
 # Model args
 parser.add_argument('--n_layers', type=int, default=3, help='number of Transformer layers')
 parser.add_argument('--n_heads', type=int, default=16, help='number of Transformer heads')

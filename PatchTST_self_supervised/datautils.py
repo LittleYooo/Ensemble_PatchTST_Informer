@@ -97,9 +97,7 @@ def get_dls(params):
                 'features': params.features,
                 'scale': True, # True
                 'size': size,
-                'use_time_features': params.use_time_features,
-                "train_split": 0.05,
-                "test_split": 0.9
+                'use_time_features': params.use_time_features
                 },
                 batch_size=params.batch_size,
                 workers=params.num_workers,
