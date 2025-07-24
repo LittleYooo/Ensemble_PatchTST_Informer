@@ -1,1 +1,48 @@
-# trajectory-on-PatchTST
+# 集成patchtst模型
+
+update time: 2025-07-24
+
+1. 脚本执行
+```shell
+python train_selector.py
+python ensemble_predict.py
+```
+
+2. 实验结果
+```shell
+train_selector.py
+
+Epoch 0: loss = 0.6778
+Epoch 10: loss = 0.6350
+Epoch 20: loss = 0.5920
+Epoch 30: loss = 0.5461
+Epoch 40: loss = 0.4957
+Epoch 50: loss = 0.4404
+Epoch 60: loss = 0.3822
+Epoch 70: loss = 0.3236
+Epoch 80: loss = 0.2681
+Epoch 90: loss = 0.2184
+模型验证保存成功: ./saved_models/selector.pth
+模型训练&加载测试通过！
+```
+
+
+
+```shell
+ensemble_predict.py
+
+==================================================
+ModelA 各维度MSE: [0.5661 0.4915 0.4613 0.5272 0.6367 0.4818 0.601  0.607  0.4617] | 平均: 0.5371
+ModelB 各维度MSE: [0.5582 0.565  0.5772 0.5589 0.5508 0.5482 0.5601 0.6046 0.5394] | 平均: 0.5625
+==================================================
+集成后的各维度MSE: [0.5582 0.4915 0.4613 0.5272 0.6367 0.4818 0.5601 0.607  0.4617] | 平均: 0.5317
+==================================================
+
+
+性能对比报告:
+ModelA 平均MSE: 0.5371
+ModelB 平均MSE: 0.5625
+动态集成MSE: 0.5317
+相对最佳模型提升: 1.01%
+
+```
