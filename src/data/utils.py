@@ -3,8 +3,10 @@ import torch
 import torch.nn as nn
 from scipy import stats
 from ..models.patchtst.model.model import get_pts_model
-
+from ..models.Informer.exp.exp_main import Exp_Main
 import numpy as np
+import pandas as pd
+from types import SimpleNamespace
 
 def generate_sample_data(samples=90, dim=9):
     time = np.linspace(0, 10, samples)
@@ -42,8 +44,63 @@ def load_patchtst_model(path):
     model = get_pts_model(path)
     return model.eval()
 
+def get_informer_predictions(X):
+    args = SimpleNamespace(
+        is_training=0,
+        train_only=False,
+        root_path="PatchTST_supervised\dataset",
+        data_path="HTV2.csv",
+        model_id="model_informer_HTV2",
+        model="Informer",
+        data="custom",
+        features="M",
+        target="OT",
+        freq="h",
+        individualstore_true=False,
+        embed_type=0,
+        moving_avg=25,
+        dropout=0.2,
+        activation="gelu",
+        output_attention="store_true",
+        do_predict="store_true",
+        num_workers=10,
+        train_epochs=20,
+        batch_size=64,
+        patience=3,
+        loss="mse",
+        lradj="type1",
+        use_amp=False,
+        checkpoints="saved_models",
+        seq_len=100,
+        label_len=48,
+        pred_len=100,
+        d_model=64,
+        n_heads=8,
+        e_layers=2,
+        d_layers=1,
+        d_ff=256,
+        factor=3,
+        embed="timeF",
+        enc_in=9,
+        dec_in=9,
+        c_out=9,
+        learning_rate=0.00001,
+        distil=True,
+        des="Exp",
+        itr=1,
+        use_gpu=False,
+        gpu=0,
+        use_multi_gpu=False,
+        devices="0,1,2,3",
+        test_flop=False,
+    )
+    exp = Exp_Main(args)
+    cols = ['date', 'date.1', 'date.2', 'date.3', 'date.4', 'date.5', 'OT', 'OT.1', 'OT.2']
+    X = pd.DataFrame(X, columns=cols)
+    return exp.predict(X, True).squeeze()  # 返回预测结果
+
 def get_predictions(X):
-    modelA = load_model("./saved_models/modelA.pth") # basic model
+    predA = get_informer_predictions(X)  # informer
     modelB = load_patchtst_model("./modelHTV2.pth")  # patchtst model
     
     with torch.no_grad():
@@ -52,7 +109,6 @@ def get_predictions(X):
         X_reshaped = X_tensor.unsqueeze(0).permute(0, 2, 1).unsqueeze(1)
         print(X_reshaped.shape)  # 输出: torch.Size([1, 1, 9, 100])
 
-        predA = modelA(X_tensor).squeeze().numpy()
         predB = modelB(X_reshaped).squeeze().numpy()
     return predA, predB
 
