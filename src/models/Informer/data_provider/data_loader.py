@@ -299,7 +299,7 @@ class Dataset_Custom(Dataset):
 class Dataset_Pred(Dataset):
     def __init__(self, root_path, flag='pred', size=None,
                  features='S', data_path='ETTh1.csv',
-                 target='OT', scale=True, inverse=False, timeenc=0, freq='15min', cols=None, train_only=False, custom_data=None):
+                 target='OT', scale=False, inverse=False, timeenc=0, freq='15min', cols=None, train_only=False, custom_data=None):
         # size [seq_len, label_len, pred_len]
         # info
         if size == None:
@@ -330,7 +330,8 @@ class Dataset_Pred(Dataset):
         if self.custom_data is not None:
             df_raw = self.custom_data
         else:
-            df_raw = pd.read_csv(os.path.join(self.root_path,
+            raise NotImplementedError("Custom data loading not supported in this project.")
+            df_raw = pd.read_csv(os.path.join(self.root_path,   
                                              self.data_path))
         '''
         df_raw.columns: ['date', ...(other features), target feature]
