@@ -1,115 +1,44 @@
 import numpy as np
-import torch
-import torch.nn as nn
-from scipy import stats
-from ..models.patchtst.model.model import get_pts_model
-from ..models.Informer.exp.exp_main import Exp_Main
+from src.models.PatchTST.patchtst_finetune import test_func as modelB_test
+from exp.exp_main import Exp_Main
 import numpy as np
-import pandas as pd
 from types import SimpleNamespace
-from sklearn.preprocessing import StandardScaler
-
-SAVED_MODELS_DIR = "./saved_models"
-DATA_PATH = "dataset/CAV-H.csv"
-MODEL_A = "model_informer_CAV-H"
-MODEL_B = "model_patchtst_CAV-H"
+from config import *
 
 
-def load_data():
-    data = pd.read_csv(DATA_PATH, header=0).values
-    scaler = StandardScaler()
-    data = scaler.fit_transform(data)  # 归一化数据
-    print(data[:12])
-    X_train = data[:100]  # 前100步训练
-    X_val = data[100:200]  # 后100步验证
-    return X_train, X_val
+def get_predictions(flag = 'test'):
 
-def load_patchtst_model(path):
-    model = get_pts_model(weight_path=path)
-    return model.eval()
+    print("="*50)
+    print(f"loading model A: {MODEL_A}")
+    exp = Exp_Main(argsA)
+    predA, trues, mse_dim_vals_A = exp.test(setting="", test=1, data_flag=flag)  # informer
+    print(mse_dim_vals_A)
+    print(f"predA shape: {predA.shape}")
 
-def get_informer_predictions(X):
-    args = SimpleNamespace(
-        is_training=0,
-        train_only=False,
-        root_path="PatchTST_supervised\dataset",
-        data_path="HTV2.csv",
-        model_id=MODEL_A,
-        model="Informer",
-        data="custom",
-        features="M",
-        target="OT",
-        freq="h",
-        individualstore_true=False,
-        embed_type=0,
-        moving_avg=25,
-        dropout=0.2,
-        activation="gelu",
-        output_attention="store_true",
-        do_predict="store_true",
-        num_workers=10,
-        train_epochs=20,
-        batch_size=64,
-        patience=3,
-        loss="mse",
-        lradj="type1",
-        use_amp=False,
-        checkpoints="saved_models",
-        seq_len=100,
-        label_len=48,
-        pred_len=100,
-        d_model=64,
-        n_heads=8,
-        e_layers=2,
-        d_layers=1,
-        d_ff=256,
-        factor=3,
-        embed="timeF",
-        enc_in=9,
-        dec_in=9,
-        c_out=9,
-        learning_rate=0.00001,
-        distil=True,
-        des="Exp",
-        itr=1,
-        use_gpu=True,
-        gpu=0,
-        use_multi_gpu=False,
-        devices="0,1,2,3",
-        test_flop=False,
-    )
-    exp = Exp_Main(args)
-    cols = ['date', 'date.1', 'date.2', 'date.3', 'date.4', 'date.5', 'OT', 'OT.1', 'OT.2']
-    X = torch.FloatTensor(X[-100:])  # 最后100步作为输入
-    X = pd.DataFrame(X, columns=cols)
-    return exp.predict(X, True).squeeze()  # 返回预测结果
+    print("="*50)
 
-def get_predictions(X):
-    predA = get_informer_predictions(X)  # informer
-    modelB = load_patchtst_model(f"{SAVED_MODELS_DIR}/{MODEL_B}.pth")  # patchtst model
+    print(f"loading model B: {MODEL_B}")
+    B_out = modelB_test(weight_path=f"{SAVED_MODELS_DIR}/{MODEL_B}", args=argsB, flag=flag)  # patchtst
+    predB = B_out[0]
+    trues2 = B_out[1]
+    assert np.allclose(trues, trues2), "模型A和B的真实值不匹配"
+    mse_dim_vals_B = B_out[2][0].tolist()
     
-    with torch.no_grad():
-        X_tensor = torch.FloatTensor(X[-100:])  # 最后100步作为输入
+    print(f"predB shape: {predB.shape}")
+    print("="*50)
 
-        X_reshaped = X_tensor.unsqueeze(0).permute(0, 2, 1).unsqueeze(1)
+    return predA, predB, trues
 
-        # X_expanded = X_reshaped.expand(1, -1, -1, -1)  # 复制到 [64,1,9,100]
 
-        predB = modelB(X_reshaped).squeeze().numpy()
-    return predA, predB
+def MSE(pred, true):
+    return np.mean((pred - true) ** 2)
 
-def extract_features(window):
-    """输入：100×9的窗口数据"""
-    features = []
-    for i in range(window.shape[1]):  # 每个维度单独处理
-        col = window[:, i]
-        # 时域特征
-        features += [
-            np.mean(col), np.std(col), 
-            stats.skew(col),  # 偏度
-            np.corrcoef(col[:-1], col[1:])[0,1]  # 自相关
-        ]
-        # 频域特征
-        fft = np.abs(np.fft.fft(col)[:5])  # 取前5个频率分量
-        features.extend(fft)
-    return np.array(features)
+def metric(pred, true, flag=0):
+    mse = MSE(pred, true)
+
+    mse_dims_vals = []
+    for dim in range(true.shape[-1]):
+        mse_dims_val = MSE(true[:,:,dim], pred[:,:,dim])
+        mse_dims_vals.append(mse_dims_val)
+
+    return mse_dims_vals

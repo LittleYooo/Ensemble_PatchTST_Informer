@@ -6,14 +6,14 @@ import random
 import numpy as np
 
 # os.environ["CUDA_VISIBLE_DEVICES"] = "5,6"
-fix_seed = 2021
+fix_seed = 42
 random.seed(fix_seed)
 torch.manual_seed(fix_seed)
 np.random.seed(fix_seed)
 
 
 from datetime import datetime
- 
+
 now = datetime.now()
 formatted_now = now.strftime("%Y-%m-%d %H:%M:%S")
 print("当前时间:", formatted_now)

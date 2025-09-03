@@ -4,8 +4,8 @@ update time: 2025-07-24
 
 1. 脚本执行
 ```shell
-python train_selector.py
-python ensemble_predict.py
+python main.py --train
+python main.py --test
 ```
 
 2. 实验结果

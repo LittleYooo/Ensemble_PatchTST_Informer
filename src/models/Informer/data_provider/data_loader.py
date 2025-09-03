@@ -5,7 +5,7 @@ import os
 import torch
 from torch.utils.data import Dataset, DataLoader
 from sklearn.preprocessing import StandardScaler
-from ..utils.timefeatures import time_features
+from utils.timefeatures import time_features
 import warnings
 
 warnings.filterwarnings('ignore')
@@ -299,7 +299,7 @@ class Dataset_Custom(Dataset):
 class Dataset_Pred(Dataset):
     def __init__(self, root_path, flag='pred', size=None,
                  features='S', data_path='ETTh1.csv',
-                 target='OT', scale=False, inverse=False, timeenc=0, freq='15min', cols=None, train_only=False, custom_data=None):
+                 target='OT', scale=True, inverse=False, timeenc=0, freq='15min', cols=None, train_only=False):
         # size [seq_len, label_len, pred_len]
         # info
         if size == None:
@@ -322,17 +322,12 @@ class Dataset_Pred(Dataset):
         self.cols = cols
         self.root_path = root_path
         self.data_path = data_path
-        self.custom_data = custom_data
         self.__read_data__()
 
     def __read_data__(self):
         self.scaler = StandardScaler()
-        if self.custom_data is not None:
-            df_raw = self.custom_data
-        else:
-            raise NotImplementedError("Custom data loading not supported in this project.")
-            df_raw = pd.read_csv(os.path.join(self.root_path,   
-                                             self.data_path))
+        df_raw = pd.read_csv(os.path.join(self.root_path,
+                                          self.data_path))
         '''
         df_raw.columns: ['date', ...(other features), target feature]
         '''
@@ -349,7 +344,7 @@ class Dataset_Pred(Dataset):
 
         if self.features == 'M' or self.features == 'MS':
             df_raw = df_raw[['date'] + cols]
-            cols_data = df_raw.columns
+            cols_data = df_raw.columns[1:]
             df_data = df_raw[cols_data]
         elif self.features == 'S':
             df_raw = df_raw[['date'] + cols + [self.target]]

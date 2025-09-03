@@ -1,8 +1,8 @@
-from ..data_provider.data_factory import data_provider
-from ..exp.exp_basic import Exp_Basic
-from ..models import Informer, Autoformer, Transformer, DLinear, Linear, NLinear
-from ..utils.tools import EarlyStopping, adjust_learning_rate, visual, test_params_flop
-from ..utils.metrics import metric
+from data_provider.data_factory import data_provider
+from exp.exp_basic import Exp_Basic
+from models import Informer, Autoformer, Transformer, DLinear, Linear, NLinear
+from utils.tools import EarlyStopping, adjust_learning_rate, visual, test_params_flop
+from utils.metrics import metric
 
 import numpy as np
 import pandas as pd
@@ -17,7 +17,8 @@ import warnings
 import matplotlib.pyplot as plt
 import numpy as np
 # from rk4_trans.rk4_test import Control2State
-from ..exp.data_plot import data_plot
+from exp.data_plot import data_plot
+
 
 warnings.filterwarnings('ignore')
 
@@ -217,23 +218,24 @@ class Exp_Main(Exp_Basic):
 
         return self.model
 
-    def test(self, setting, test=0):
-        test_data, test_loader = self._get_data(flag='test')
+    def test(self, setting, test=0, data_flag='test'):
+        print(f"loading {data_flag} data")
+        if data_flag == 'val': data_flag = 'val2'
+        test_data, test_loader = self._get_data(flag=data_flag)
         
         if test:
-            print('loading model')
-            self.model.load_state_dict(torch.load(os.path.join('./checkpoints/' + setting, 'checkpoint.pth')))
+            self.model.load_state_dict(torch.load(os.path.join(f'./saved_models/{self.args.model_id}.pth')))
 
         preds = []
         trues = []
         inputx = []
-        folder_path = './test_results/' + setting + '/'
-        if not os.path.exists(folder_path):
-            os.makedirs(folder_path)
+        # folder_path = './test_results/' + setting + '/'
+        # if not os.path.exists(folder_path):
+        #     os.makedirs(folder_path)
 
         self.model.eval()
-        w_dists = []
-        w_dists_scaler = []
+        # w_dists = []
+        # w_dists_scaler = []
         with torch.no_grad():
             for i, (batch_x, batch_y, batch_x_mark, batch_y_mark) in enumerate(test_loader):
                 batch_x = batch_x.float().to(self.device)
@@ -278,11 +280,11 @@ class Exp_Main(Exp_Basic):
                 preds.append(pred)
                 trues.append(true)
                 inputx.append(batch_x.detach().cpu().numpy())
-                if i % 20 == 0:
-                    input = batch_x.detach().cpu().numpy()
-                    gt = np.concatenate((input[0, :, -1], true[0, :, -1]), axis=0)
-                    pd = np.concatenate((input[0, :, -1], pred[0, :, -1]), axis=0)
-                    visual(gt, pd, os.path.join(folder_path, str(i) + '.pdf'))
+                # if i % 20 == 0:
+                    # input = batch_x.detach().cpu().numpy()
+                    # gt = np.concatenate((input[0, :, -1], true[0, :, -1]), axis=0)
+                    # pd = np.concatenate((input[0, :, -1], pred[0, :, -1]), axis=0)
+                    # visual(gt, pd, os.path.join(folder_path, str(i) + '.pdf'))
 
                         
                 # if (test_data.scale):
@@ -315,23 +317,30 @@ class Exp_Main(Exp_Basic):
 
 
         # result save
-        folder_path = './results/' + setting + '/'
-        if not os.path.exists(folder_path):
-            os.makedirs(folder_path)
+        # folder_path = './results/' + setting + '/'
+        # if not os.path.exists(folder_path):
+        #     os.makedirs(folder_path)
 
         mae, mse, mse_dims_vals, w_dist, w_dist_dims= metric(preds, trues)
+        return preds, trues, mse_dims_vals
+        w_dist_dims = np.array(w_dist_dims).round(8).tolist()
+
         print('mse:{}, mae:{}, wdist:{}'.format(mse, mae, w_dist))
         print('\n')
         print('mse_dims:{}'.format(mse_dims_vals))
         print('\n')
         print('mse_control:{}'.format(sum(mse_dims_vals[-3:])/3))
         print('\n')
-        # print('wdist_dims:{}'.format(w_dist_dims))
-        # print('\n')
-        # print('wdist_state:{}'.format(sum(w_dist_dims[:6])/6))
-        # print('\n')
-        # print('wdist_state_scaler:{}'.format(w_dist_scaler))
+        print('mae_dims:{}'.format(mae_dims_vals))
         print('\n')
+        print('mae_control:{}'.format(sum(mae_dims_vals[-3:])/3))
+        print('\n')
+        print('wdist_dims:{}'.format(w_dist_dims))
+        print('\n')
+        print('wdist_state:{}'.format(sum(w_dist_dims[:6])/6))
+        print('\n')
+        # print('wdist_state_scaler:{}'.format(w_dist_scaler))
+        # print('\n')
 
         f = open(folder_path + "result.txt", 'a')
         f.write(setting + "  \n")
@@ -341,10 +350,10 @@ class Exp_Main(Exp_Basic):
         f.write('\n')
         f.write('mse_control:{}'.format(sum(mse_dims_vals[-3:])/3))
         f.write('\n')
-        # f.write('wdist_dims:{}'.format(w_dist_dims))
-        # f.write('\n')
-        # f.write('wdist_state:{}'.format(sum(w_dist_dims[:6])/6))
-        # f.write('\n')
+        f.write('wdist_dims:{}'.format(w_dist_dims))
+        f.write('\n')
+        f.write('wdist_state:{}'.format(sum(w_dist_dims[:3])/3))
+        f.write('\n')
         # f.write('wdist_state_scaler:{}'.format(w_dist_scaler))
         # f.write('\n')
         f.write('\n')
@@ -357,13 +366,12 @@ class Exp_Main(Exp_Basic):
         # pd.DataFrame(np.array([mse, mae]).reshape(1,-1), columns=['mse','mae']).to_csv(os.path.join('./results/' + setting, 'acc.csv'), float_format='%.6f', index=False)
         return
 
-    def predict(self, custom_data, load=False):
-        # pred_data, pred_loader = self._get_data(flag='pred')
-        pred_data, pred_loader = data_provider(self.args, flag='pred', custom_data=custom_data)
+    def predict(self, setting, load=False):
+        pred_data, pred_loader = self._get_data(flag='pred')
 
         if load:
-            path = os.path.join(self.args.checkpoints)
-            best_model_path = path + '/' + f'{self.args.model_id}.pth'
+            path = os.path.join(self.args.checkpoints, setting)
+            best_model_path = path + '/' + 'checkpoint.pth'
             self.model.load_state_dict(torch.load(best_model_path))
 
         preds = []
@@ -403,14 +411,14 @@ class Exp_Main(Exp_Basic):
         preds = np.array(preds)
         preds = np.concatenate(preds, axis=0)
         if (pred_data.scale):
-            preds = pred_data.inverse_transform(preds[0])
+            preds = pred_data.inverse_transform(preds)
         
-        # # result save
-        # folder_path = './results/' + setting + '/'
-        # if not os.path.exists(folder_path):
-        #     os.makedirs(folder_path)
+        # result save
+        folder_path = './results/' + setting + '/'
+        if not os.path.exists(folder_path):
+            os.makedirs(folder_path)
 
-        # np.save(folder_path + 'real_prediction.npy', preds)
-        # pd.DataFrame(np.append(np.transpose([pred_data.future_dates]), preds[0], axis=1), columns=pred_data.cols).to_csv(folder_path + 'real_prediction.csv', index=False)
+        np.save(folder_path + 'real_prediction.npy', preds)
+        pd.DataFrame(np.append(np.transpose([pred_data.future_dates]), preds[0], axis=1), columns=pred_data.cols).to_csv(folder_path + 'real_prediction.csv', index=False)
 
-        return preds
+        return

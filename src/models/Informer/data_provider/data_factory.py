@@ -1,4 +1,4 @@
-from ..data_provider.data_loader import Dataset_ETT_hour, Dataset_ETT_minute, Dataset_Custom, Dataset_Pred,Dataset_DIM
+from data_provider.data_loader import Dataset_ETT_hour, Dataset_ETT_minute, Dataset_Custom, Dataset_Pred,Dataset_DIM
 from torch.utils.data import DataLoader
 
 data_dict = {
@@ -12,7 +12,7 @@ data_dict = {
 }
 
 
-def data_provider(args, flag, custom_data=None):
+def data_provider(args, flag):
     Data = data_dict[args.data]
     timeenc = 0 if args.embed != 'timeF' else 1
     train_only = args.train_only
@@ -28,6 +28,12 @@ def data_provider(args, flag, custom_data=None):
         batch_size = 1
         freq = args.freq
         Data = Dataset_Pred
+    elif flag == 'val2':
+        shuffle_flag = False
+        drop_last = False
+        batch_size = args.batch_size
+        freq = args.freq
+        flag = 'val'
     else:
         shuffle_flag = True
         drop_last = True
@@ -43,8 +49,7 @@ def data_provider(args, flag, custom_data=None):
         target=args.target,
         timeenc=timeenc,
         freq=freq,
-        train_only=train_only,
-        custom_data=custom_data,
+        train_only=train_only
     )
     print(flag, len(data_set))
     data_loader = DataLoader(

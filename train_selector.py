@@ -1,8 +1,11 @@
 import torch
 import numpy as np
-from src.data.utils import *
 import os
+from src.data.utils import *
+
 import warnings
+from torch.utils.data import DataLoader, TensorDataset
+
 
 # 安全警告处理
 warnings.filterwarnings("ignore", category=UserWarning, message=".*weights_only.*")
@@ -19,28 +22,28 @@ def save_model(model, path):
         os.remove(path)  # 删除无效文件
         raise
 
-def train_selector():
+def train():
     # 初始化环境
     os.makedirs("./saved_models", exist_ok=True)
     torch.manual_seed(42)
-
-    # 加载数据
-    X_train, X_val = load_data()
     
     # 生成训练数据
-    predA, predB = get_predictions(X_train)
+    predA, predB, trues = get_predictions(flag='val')
+    N, L, D = predA.shape  # N: 样本数, L: 预测长度, D: 特征维度
 
-    # 计算 MSE
-    mse_A = ((predA - X_val)**2).mean(axis=0)  # 按特征维度计算MSE
-    mse_B = ((predB - X_val)**2).mean(axis=0)
-    
-    # 生成特征
-    features = np.concatenate([predA, predB], axis=1)
-    
-    # 生成选择标签
-    labels = (mse_A < mse_B).astype(float)  # 直接使用特征维度的比较结果
+    labels = []
+    for i in range(N):
+        mse_dim_vals_A = metric(predA[i:i+1], trues[i:i+1])
+        mse_dim_vals_B = metric(predB[i:i+1], trues[i:i+1])
+        label = (np.array(mse_dim_vals_A) < np.array(mse_dim_vals_B)).astype(float)
+        labels.append(label)
+    labels = np.array(labels)  # (N, D)
 
-    # 定义选择器模型
+    features = np.concatenate([predA, predB], axis=2)  # (N, L, 2D)
+    features = features.reshape(N, -1)  # (N, L * 2D)
+
+#=========================================================================================#
+
     selector = torch.nn.Sequential(
         torch.nn.Linear(features.shape[1], 64),
         torch.nn.ReLU(),
@@ -52,21 +55,25 @@ def train_selector():
     optimizer = torch.optim.Adam(selector.parameters(), lr=0.001)
     criterion = torch.nn.BCELoss()
     
+    dataset = TensorDataset(torch.FloatTensor(features), torch.FloatTensor(labels))
+    loader = DataLoader(dataset, batch_size=32, shuffle=True)
+
     # 训练循环
     for epoch in range(100):
-        optimizer.zero_grad()
-        outputs = selector(torch.FloatTensor(features))
-        
-        # 广播 labels 以匹配输出维度
-        loss = criterion(outputs, torch.FloatTensor(labels).expand_as(outputs))
-        loss.backward()
-        optimizer.step()
+        for batch_features, batch_labels in loader:
+            optimizer.zero_grad()
+
+            outputs = selector(batch_features)
+            loss = criterion(outputs, batch_labels)
+
+            loss.backward()
+            optimizer.step()
         
         if epoch % 10 == 0:
-            print(f"Epoch {epoch}: loss = {loss.item():.4f}")
+            print(f"Epoch {epoch}: loss = {loss.item():.8f}")
     
     # 保存模型（带验证）
-    save_model(selector, "./saved_models/selector.pth")
+    save_model(selector, "saved_models/selector.pth")
     
     # 测试加载
     try:
@@ -77,7 +84,7 @@ def train_selector():
             torch.nn.Sigmoid()
         )
         test_model.load_state_dict(
-            torch.load("./saved_models/selector.pth", weights_only=True)
+            torch.load("saved_models/selector.pth", weights_only=True)
         )
         print("模型训练&加载测试通过！")
     except Exception as e:
@@ -85,4 +92,4 @@ def train_selector():
         raise
 
 if __name__ == "__main__":
-    train_selector()
+    train()
