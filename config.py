@@ -1,12 +1,16 @@
 from types import SimpleNamespace
 
 SAVED_MODELS_DIR = "./saved_models"
-DATASET = 'CAV-H'
-# DATASET = 'HTV2'
+MODEL_A_DIR = f"{SAVED_MODELS_DIR}/Informer"
+MODEL_B_DIR = f"{SAVED_MODELS_DIR}/PatchTST"
+
 # DATASET = 's0.3548_m907'
+# DATASET = 'CAV-H'
+DATASET = 'HTV2'
+
 DATA_PATH = f"dataset/{DATASET}.csv"
-MODEL_A = f"model_informer_{DATASET}"
-MODEL_B = f"model_patchtst_{DATASET}"
+MODEL_A = DATASET
+MODEL_B = DATASET
 
 argsA = SimpleNamespace(
         is_training=0,
@@ -82,7 +86,7 @@ argsB = SimpleNamespace(
     head_dropout=0.2,
     n_epochs_finetune=20,
     lr=1e-4,
-    pretrained_model=f"{SAVED_MODELS_DIR}/{MODEL_B}",
+    pretrained_model="",
     finetuned_model_id=1,
     model_type='based_model',
     dataset_size='5138',

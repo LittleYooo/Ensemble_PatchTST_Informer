@@ -224,7 +224,7 @@ class Exp_Main(Exp_Basic):
         test_data, test_loader = self._get_data(flag=data_flag)
         
         if test:
-            self.model.load_state_dict(torch.load(os.path.join(f'./saved_models/{self.args.model_id}.pth')))
+            self.model.load_state_dict(torch.load(os.path.join(f'./saved_models/Informer/{self.args.model_id}.pth')))
 
         preds = []
         trues = []

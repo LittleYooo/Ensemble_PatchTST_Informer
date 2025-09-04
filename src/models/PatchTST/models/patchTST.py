@@ -248,7 +248,7 @@ class PatchTSTEncoder(nn.Module):
         self.W_pos = positional_encoding(pe, learn_pe, num_patch, d_model)
 
         # TimeFeature encoding
-        self.temporal_embedding = TimeFeatureEmbedding(d_model=d_model, embed_type=embed_type, freq=freq)
+        # self.temporal_embedding = TimeFeatureEmbedding(d_model=d_model, embed_type=embed_type, freq=freq)
 
         # time 
 

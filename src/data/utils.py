@@ -9,7 +9,7 @@ from config import *
 def get_predictions(flag = 'test'):
 
     print("="*50)
-    print(f"loading model A: {MODEL_A}")
+    print(f"loading model A: {MODEL_A_DIR}/{MODEL_A}")
     exp = Exp_Main(argsA)
     predA, trues, mse_dim_vals_A = exp.test(setting="", test=1, data_flag=flag)  # informer
     print(mse_dim_vals_A)
@@ -17,8 +17,8 @@ def get_predictions(flag = 'test'):
 
     print("="*50)
 
-    print(f"loading model B: {MODEL_B}")
-    B_out = modelB_test(weight_path=f"{SAVED_MODELS_DIR}/{MODEL_B}", args=argsB, flag=flag)  # patchtst
+    print(f"loading model B: {MODEL_B_DIR}/{MODEL_B}")
+    B_out = modelB_test(weight_path=f"{MODEL_B_DIR}/{MODEL_B}", args=argsB, flag=flag)  # patchtst
     predB = B_out[0]
     trues2 = B_out[1]
     assert np.allclose(trues, trues2), "模型A和B的真实值不匹配"

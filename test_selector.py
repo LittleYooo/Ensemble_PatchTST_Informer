@@ -1,13 +1,14 @@
 import numpy as np
 import torch
 from src.data.utils import *
-
+from config import DATASET
 
 def print_report(mse_A, mse_B, mse_ensemble):
     print("\n性能对比报告:")
-    print("A模型各维度MSE:", np.round(mse_A, 4), f"| 平均: {np.mean(mse_A):.8f} | last_3: {np.mean(mse_A[-3:]):.8f}")
-    print("B模型各维度MSE:", np.round(mse_B, 4), f"| 平均: {np.mean(mse_B):.8f} | last_3: {np.mean(mse_B[-3:]):.8f}")
-    print("集成后各维度MSE:", np.round(mse_ensemble, 4), f"| 平均: {np.mean(mse_ensemble):.8f} | last_3: {np.mean(mse_ensemble[-3:]):.8f}")
+    print(f"数据集: {DATASET}")
+    print("A模型MSE:", np.round(mse_A, 6)[-3:], f"| 平均: {np.mean(mse_A):.8f} | last_3: {np.mean(mse_A[-3:]):.8f}")
+    print("B模型MSE:", np.round(mse_B, 6)[-3:], f"| 平均: {np.mean(mse_B):.8f} | last_3: {np.mean(mse_B[-3:]):.8f}")
+    print("集成后MSE:", np.round(mse_ensemble, 6)[-3:], f"| 平均: {np.mean(mse_ensemble):.8f} | last_3: {np.mean(mse_ensemble[-3:]):.8f}")
 
     last_3_A = np.mean(mse_A[-3:])
     last_3_B = np.mean(mse_B[-3:])
