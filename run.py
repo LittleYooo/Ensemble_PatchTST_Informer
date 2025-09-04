@@ -23,10 +23,6 @@ parser.add_argument('--test', action='store_true', default=False, help='test the
 parser.add_argument('--dset', type=str, default='HTV2', help='dataset name')
 args = parser.parse_args()
 
-import config
-config.DATASET = args.dset
-
-
 if args.train:
     print("训练选择器模型...")
     train_selector.train()

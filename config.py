@@ -2,6 +2,8 @@ from types import SimpleNamespace
 
 SAVED_MODELS_DIR = "./saved_models"
 DATASET = 'CAV-H'
+# DATASET = 'HTV2'
+# DATASET = 's0.3548_m907'
 DATA_PATH = f"dataset/{DATASET}.csv"
 MODEL_A = f"model_informer_{DATASET}"
 MODEL_B = f"model_patchtst_{DATASET}"
