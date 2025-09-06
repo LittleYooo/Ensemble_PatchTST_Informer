@@ -15,6 +15,9 @@ except:
 
 import train_selector
 import test_selector
+import random
+import numpy as np
+import torch
 
 import argparse
 parser = argparse.ArgumentParser()
@@ -23,9 +26,15 @@ parser.add_argument('--test', action='store_true', default=False, help='test the
 parser.add_argument('--dset', type=str, default='HTV2', help='dataset name')
 args = parser.parse_args()
 
+fix_seed = 42
+random.seed(fix_seed)
+torch.manual_seed(fix_seed)
+np.random.seed(fix_seed)
+
+
 if args.train:
     print("训练选择器模型...")
     train_selector.train()
-elif args.test:
+if args.test:
     print("测试选择器模型...")
     test_selector.test()

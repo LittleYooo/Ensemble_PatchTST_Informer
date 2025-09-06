@@ -4,7 +4,7 @@ from exp.exp_main import Exp_Main
 import numpy as np
 from types import SimpleNamespace
 from config import *
-
+import torch
 
 def get_predictions(flag = 'test'):
 
@@ -15,6 +15,7 @@ def get_predictions(flag = 'test'):
     print(mse_dim_vals_A)
     print(f"predA shape: {predA.shape}")
 
+    torch.cuda.empty_cache()
     print("="*50)
 
     print(f"loading model B: {MODEL_B_DIR}/{MODEL_B}")
@@ -25,6 +26,7 @@ def get_predictions(flag = 'test'):
     mse_dim_vals_B = B_out[2][0].tolist()
     
     print(f"predB shape: {predB.shape}")
+    torch.cuda.empty_cache()
     print("="*50)
 
     return predA, predB, trues
