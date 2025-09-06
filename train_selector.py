@@ -53,11 +53,9 @@ def train():
     labels = np.array(labels)  # (N, L // patch_len, D)
     labels = labels.reshape(N * L // patch_len, D)  # (N * L // patch_len, D)
 
-    features = np.concatenate([predA, predB], axis=2)  # (N, L, 2D)
-    # (N, L // patch_len, patch_len * 2D)
-    features = features.reshape(N * L // patch_len, patch_len * 2 * D)
-    # features = features.reshape(N, -1)  # (N, L * 2D)
-    # selector_input_dim = features.shape[1]
+    diff = (predA - predB) ** 2
+    features = np.concatenate([predA, predB, diff], axis=2)  # (N, L, 3D)
+    features = features.reshape(N * L // patch_len, patch_len * 3 * D)  # (N * L // patch_len, patch_len * 3D)
 
 #=========================================================================================#
 
@@ -76,8 +74,8 @@ def train():
     loader = DataLoader(dataset, batch_size=32, shuffle=True)
 
     # 训练循环
-    early_stopping = EarlyStopping(patience=25, verbose=True)
-    # scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', factor=0.9, patience=1)
+    early_stopping = EarlyStopping(patience=20, verbose=True)
+    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', factor=0.9, patience=5)
 
     for epoch in range(200):
         last_N_loss = []
@@ -92,7 +90,9 @@ def train():
                 last_N_loss.pop(0)
                 # last_N_loss.clear()
                 
-                # scheduler.step(avg_last_N_loss)
+                print("Learning rate:", optimizer.param_groups[0]['lr'], end=" -> ")
+                scheduler.step(avg_last_N_loss)
+                print(optimizer.param_groups[0]['lr'])
                 early_stopping(avg_last_N_loss, selector, "saved_models/selector.pth")
 
             if early_stopping.early_stop:

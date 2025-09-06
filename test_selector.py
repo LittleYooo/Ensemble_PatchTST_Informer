@@ -9,7 +9,7 @@ def save_results(results):
     os.makedirs(os.path.dirname(path), exist_ok=True)
     with open(path, "w") as f:
         f.write(f"Dataset: {DATASET}\n")
-        f.write("mse:")
+        f.write("mse:\n")
         # 纵向
         f.write("\n".join([f"{v:.8f}" for v in results]) + "\n")
     print(f"结果已保存到 {path}")
@@ -45,9 +45,9 @@ def test():
     trues = trues[:, :, -3: ]
     N, L, D = predA.shape  # N: 样本数,
 
-    features = np.concatenate([predA, predB], axis=2)  # (N, L, 2D)
-    # features = features.reshape(N, -1)  # (N, L * 2D)
-    features = features.reshape(N * L // patch_len, patch_len * 2 * D)  # (N * L // patch_len, patch_len * 2D)
+    diff = (predA - predB) ** 2
+    features = np.concatenate([predA, predB, diff], axis=2)  # (N, L, 3D)
+    features = features.reshape(N * L // patch_len, patch_len * 3 * D)  # (N * L // patch_len, patch_len * 3D)
 
     # 加载选择器
     selector = torch.nn.Sequential(
