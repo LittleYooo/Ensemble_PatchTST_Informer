@@ -4,15 +4,16 @@ SAVED_MODELS_DIR = "./saved_models"
 MODEL_A_DIR = f"{SAVED_MODELS_DIR}/Informer"
 MODEL_B_DIR = f"{SAVED_MODELS_DIR}/PatchTST"
 
-# DATASET = 's0.3548_m907'
+DATASET = 's0.3548_m907'
 # DATASET = 'CAV-H'
-DATASET = 'HTV2'
+# DATASET = 'HTV2'
 
 DATA_PATH = f"dataset/{DATASET}.csv"
 MODEL_A = DATASET
 MODEL_B = DATASET
 
-selector_patch_len = 10     # factor of 100
+selector_patch_len = 20     # factor of 100
+THRESHOLD = 0.54
 
 argsA = SimpleNamespace(
         is_training=0,
@@ -41,7 +42,7 @@ argsA = SimpleNamespace(
         use_amp=False,
         checkpoints="saved_models",
         seq_len=100,
-        label_len=50,
+        label_len=10,
         pred_len=100,
         d_model=64,
         n_heads=8,

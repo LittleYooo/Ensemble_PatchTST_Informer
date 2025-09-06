@@ -6,6 +6,7 @@ from src.data.utils import *
 import warnings
 from torch.utils.data import DataLoader, TensorDataset
 from config import selector_patch_len as patch_len
+from src.models.Selector.Selector import Selector as Selector
 from utils.tools import EarlyStopping
 
 # 安全警告处理
@@ -59,11 +60,9 @@ def train():
 
 #=========================================================================================#
 
-    selector = torch.nn.Sequential(
-        torch.nn.Linear(features.shape[1], 64),
-        torch.nn.ReLU(),
-        torch.nn.Linear(64, D),  # 输出层与特征维度一致
-        torch.nn.Sigmoid()
+    selector = Selector(
+        input_dim = features.shape[1],
+        output_dim=D
     )
 
     # 训练配置
@@ -74,8 +73,8 @@ def train():
     loader = DataLoader(dataset, batch_size=32, shuffle=True)
 
     # 训练循环
-    early_stopping = EarlyStopping(patience=20, verbose=True)
-    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', factor=0.9, patience=5)
+    early_stopping = EarlyStopping(patience=30, verbose=True)
+    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', factor=0.3, patience=1)
 
     for epoch in range(200):
         last_N_loss = []
@@ -90,9 +89,12 @@ def train():
                 last_N_loss.pop(0)
                 # last_N_loss.clear()
                 
-                print("Learning rate:", optimizer.param_groups[0]['lr'], end=" -> ")
+                tmp = optimizer.param_groups[0]['lr']
                 scheduler.step(avg_last_N_loss)
-                print(optimizer.param_groups[0]['lr'])
+                if tmp != optimizer.param_groups[0]['lr']:
+                    print("Learning rate:", optimizer.param_groups[0]['lr'], end=" -> ")
+                    print(optimizer.param_groups[0]['lr'])
+
                 early_stopping(avg_last_N_loss, selector, "saved_models/selector.pth")
 
             if early_stopping.early_stop:
@@ -113,11 +115,9 @@ def train():
 
     # 测试加载
     try:
-        test_model = torch.nn.Sequential(
-            torch.nn.Linear(features.shape[1], 64),
-            torch.nn.ReLU(),
-            torch.nn.Linear(64, D),
-            torch.nn.Sigmoid()
+        test_model = Selector(
+            input_dim = features.shape[1],
+            output_dim=D
         )
         test_model.load_state_dict(
             torch.load("saved_models/selector.pth", weights_only=True)

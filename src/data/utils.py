@@ -5,8 +5,16 @@ import numpy as np
 from types import SimpleNamespace
 from config import *
 import torch
+import os
+
 
 def get_predictions(flag = 'test'):
+    cached_path = f"./cached/{DATASET}_{flag}.npz"
+
+    if os.path.exists(cached_path) and flag == 'test':
+        print(f"load predictions from cache: {cached_path}")
+        data = np.load(cached_path)
+        return data['predA'], data['predB'], data['trues']
 
     print("="*50)
     print(f"loading model A: {MODEL_A_DIR}/{MODEL_A}")
@@ -29,6 +37,8 @@ def get_predictions(flag = 'test'):
     torch.cuda.empty_cache()
     print("="*50)
 
+    cache(predA, predB, trues, cached_path)
+
     return predA, predB, trues
 
 
@@ -44,3 +54,8 @@ def metric(pred, true, flag=0):
         mse_dims_vals.append(mse_dims_val)
 
     return mse_dims_vals
+
+def cache(predA, predB, trues, cached_path):
+    os.makedirs("./cached", exist_ok=True)
+    np.savez(cached_path, predA=predA, predB=predB, trues=trues)
+    print(f"predictions cached to {cached_path}")

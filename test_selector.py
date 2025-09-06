@@ -2,7 +2,8 @@ import numpy as np
 import torch
 from src.data.utils import *
 import os
-from config import DATASET, selector_patch_len as patch_len
+from config import DATASET, selector_patch_len as patch_len, THRESHOLD
+from src.models.Selector.Selector import Selector as Selector
 
 def save_results(results):
     path = f"./results/{DATASET}.txt"
@@ -33,6 +34,8 @@ def print_report(mse_A, mse_B, mse_ensemble):
     
     save_results(mse_ensemble)
 
+    return last_3_improvement
+
 def test():
     torch.manual_seed(42)
     
@@ -50,11 +53,9 @@ def test():
     features = features.reshape(N * L // patch_len, patch_len * 3 * D)  # (N * L // patch_len, patch_len * 3D)
 
     # 加载选择器
-    selector = torch.nn.Sequential(
-        torch.nn.Linear(features.shape[1], 64),
-        torch.nn.ReLU(),
-        torch.nn.Linear(64, D),
-        torch.nn.Sigmoid()
+    selector = Selector(
+        input_dim = features.shape[1],
+        output_dim=D
     )
     selector.load_state_dict(torch.load("./saved_models/selector.pth", weights_only=True))
     
@@ -63,6 +64,7 @@ def test():
     with torch.no_grad():
         features_tensor = torch.FloatTensor(features)
         out_weights = selector(features_tensor)
+        out_weights = (out_weights > THRESHOLD).float()  # (N * L // patch_len, D)
         print("out_weights shape:", out_weights.shape)  # (N * L // patch_len, D)
         out_weights = out_weights.reshape(N, L // patch_len, D)
         out_weights = out_weights.repeat_interleave(patch_len, dim=1)
@@ -74,7 +76,7 @@ def test():
     mse_dims_vals_B = metric(predB, trues)
     mse_dims_vals_ensemble = metric(pred_ensemble, trues)
 
-    print_report(mse_dims_vals_A, mse_dims_vals_B, mse_dims_vals_ensemble)
+    return print_report(mse_dims_vals_A, mse_dims_vals_B, mse_dims_vals_ensemble)
 
 if __name__ == "__main__":
     test()
