@@ -2,11 +2,11 @@ import numpy as np
 import torch
 from src.data.utils import *
 import os
-from config import DATASET, selector_patch_len as patch_len, THRESHOLD
+from config import DATASET, DATASET_SIZE, selector_patch_len as patch_len, THRESHOLD
 from src.models.Selector.Selector import Selector as Selector
 
 def save_results(results):
-    path = f"./results/{DATASET}.txt"
+    path = f"./results/{DATASET_SIZE}/{DATASET}.txt"
     os.makedirs(os.path.dirname(path), exist_ok=True)
     with open(path, "w") as f:
         f.write(f"Dataset: {DATASET}\n")
@@ -57,7 +57,7 @@ def test():
         input_dim = features.shape[1],
         output_dim=D
     )
-    selector.load_state_dict(torch.load("./saved_models/selector.pth", weights_only=True))
+    selector.load_state_dict(torch.load(f"./saved_models/selector/{DATASET}.pth", weights_only=True))
     
     selector.eval()
 

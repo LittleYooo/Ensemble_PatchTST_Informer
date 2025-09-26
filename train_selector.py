@@ -24,7 +24,7 @@ def save_model(model, path):
         os.remove(path)  # 删除无效文件
         raise
 
-def train():
+def train(args):
     # 初始化环境
     os.makedirs("./saved_models", exist_ok=True)
     torch.manual_seed(42)
@@ -74,7 +74,7 @@ def train():
 
     # 训练循环
     early_stopping = EarlyStopping(patience=30, verbose=True)
-    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', factor=0.3, patience=1)
+    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', factor=0.5, patience=1)
 
     for epoch in range(200):
         last_N_loss = []
@@ -95,7 +95,7 @@ def train():
                     print("Learning rate:", optimizer.param_groups[0]['lr'], end=" -> ")
                     print(optimizer.param_groups[0]['lr'])
 
-                early_stopping(avg_last_N_loss, selector, "saved_models/selector.pth")
+                early_stopping(avg_last_N_loss, selector, f"saved_models/selector/{DATASET}.pth")
 
             if early_stopping.early_stop:
                 print("Early stopping")
@@ -120,7 +120,7 @@ def train():
             output_dim=D
         )
         test_model.load_state_dict(
-            torch.load("saved_models/selector.pth", weights_only=True)
+            torch.load(f"saved_models/selector/{DATASET}.pth", weights_only=True)
         )
         print("模型训练&加载测试通过！")
     except Exception as e:

@@ -9,12 +9,6 @@ import os
 
 
 def get_predictions(flag = 'test'):
-    cached_path = f"./cached/{DATASET}_{flag}.npz"
-
-    if os.path.exists(cached_path) and flag == 'test':
-        print(f"load predictions from cache: {cached_path}")
-        data = np.load(cached_path)
-        return data['predA'], data['predB'], data['trues']
 
     print("="*50)
     print(f"loading model A: {MODEL_A_DIR}/{MODEL_A}")
@@ -36,8 +30,6 @@ def get_predictions(flag = 'test'):
     print(f"predB shape: {predB.shape}")
     torch.cuda.empty_cache()
     print("="*50)
-
-    cache(predA, predB, trues, cached_path)
 
     return predA, predB, trues
 

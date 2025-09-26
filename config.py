@@ -1,5 +1,7 @@
 from types import SimpleNamespace
 
+# DATASET_SIZE = 5138 # 10276 # 20552
+DATASET_SIZE = 20552
 SAVED_MODELS_DIR = "./saved_models"
 MODEL_A_DIR = f"{SAVED_MODELS_DIR}/Informer"
 MODEL_B_DIR = f"{SAVED_MODELS_DIR}/PatchTST"
@@ -8,17 +10,19 @@ DATASET = 's0.3548_m907'
 # DATASET = 'CAV-H'
 # DATASET = 'HTV2'
 
-DATA_PATH = f"dataset/{DATASET}.csv"
+DATA_PATH = f"dataset/{DATASET_SIZE}/test"
+# DATA_PATH = "dataset/dg"
 MODEL_A = DATASET
 MODEL_B = DATASET
 
-selector_patch_len = 20     # factor of 100
-THRESHOLD = 0.54
+
+selector_patch_len = 10     # factor of 100
+THRESHOLD = 0.50
 
 argsA = SimpleNamespace(
         is_training=0,
         train_only=False,
-        root_path="dataset",
+        root_path=DATA_PATH,
         data_path=f"{DATASET}.csv",
         model_id=MODEL_A,
         model="Informer",
@@ -40,7 +44,7 @@ argsA = SimpleNamespace(
         loss="mse",
         lradj="type1",
         use_amp=False,
-        checkpoints="saved_models",
+        checkpoints=MODEL_A_DIR,
         seq_len=100,
         label_len=10,
         pred_len=100,
@@ -92,6 +96,7 @@ argsB = SimpleNamespace(
     pretrained_model="",
     finetuned_model_id=1,
     model_type='based_model',
-    dataset_size='5138',
+    dataset_size=DATASET_SIZE,
+    root_path=DATA_PATH,
 )
 argsB.dset = argsB.dset_finetune

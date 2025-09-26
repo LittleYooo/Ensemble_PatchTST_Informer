@@ -24,6 +24,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--train', action='store_true', default=False, help='train the selector model')
 parser.add_argument('--test', action='store_true', default=False, help='test the selector model')
 parser.add_argument('--dset', type=str, default='HTV2', help='dataset name')
+parser.add_argument('--dset_size', type=int, default=20552, help='dataset size')
 args = parser.parse_args()
 
 fix_seed = 42
@@ -34,7 +35,7 @@ np.random.seed(fix_seed)
 
 if args.train:
     print("训练选择器模型...")
-    train_selector.train()
+    train_selector.train(args)
 if args.test:
     print("测试选择器模型...")
-    test_selector.test()
+    test_selector.test(args)

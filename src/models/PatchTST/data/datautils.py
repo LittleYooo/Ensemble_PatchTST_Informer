@@ -20,7 +20,7 @@ def get_dls(params):
 
     # root_path = './dataset/' + params.dataset_size + '/both/'
     # root_path = './dataset/' + params.dataset_size + '/only-dg/'
-    root_path = './dataset/'
+    root_path = params.root_path
         
     if params.dset == 'source_domain':
         size = [params.context_points, 0, params.target_points]
