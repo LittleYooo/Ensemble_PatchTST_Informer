@@ -2,7 +2,7 @@ import numpy as np
 import torch
 from src.data.utils import *
 import os
-from config import DATASET, DATASET_SIZE, selector_patch_len as patch_len, THRESHOLD
+from config import selector_patch_len as patch_len, THRESHOLD
 from src.models.Selector.Selector import Selector as Selector
 
 def save_results(results):
@@ -36,11 +36,16 @@ def print_report(mse_A, mse_B, mse_ensemble):
 
     return last_3_improvement
 
-def test():
+def test(args):
     torch.manual_seed(42)
     
+    global DATASET
+    DATASET = args.dset
+    global DATASET_SIZE
+    DATASET_SIZE = args.dset_size
+
     # 生成测试数据
-    predA, predB, trues = get_predictions(flag='test')
+    predA, predB, trues = get_predictions(args, flag='test')
     N, L, D = predA.shape  # N: 样本数, L: 预测长度, D: 特征维度
 
     predA = predA[:, :, -3: ]  # 只取后三维
@@ -65,7 +70,7 @@ def test():
         features_tensor = torch.FloatTensor(features)
         out_weights = selector(features_tensor)
         out_weights = (out_weights > THRESHOLD).float()  # (N * L // patch_len, D)
-        print("out_weights shape:", out_weights.shape)  # (N * L // patch_len, D)
+        # print("out_weights shape:", out_weights.shape)  # (N * L // patch_len, D)
         out_weights = out_weights.reshape(N, L // patch_len, D)
         out_weights = out_weights.repeat_interleave(patch_len, dim=1)
 

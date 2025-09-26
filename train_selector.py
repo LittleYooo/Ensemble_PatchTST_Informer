@@ -30,7 +30,7 @@ def train(args):
     torch.manual_seed(42)
 
     # 生成训练数据
-    predA, predB, trues = get_predictions(flag='val')
+    predA, predB, trues = get_predictions(args, flag='val')
     
     predA = predA[:, :, -3: ]  # 只取后三维
     predB = predB[:, :, -3: ]
@@ -95,7 +95,7 @@ def train(args):
                     print("Learning rate:", optimizer.param_groups[0]['lr'], end=" -> ")
                     print(optimizer.param_groups[0]['lr'])
 
-                early_stopping(avg_last_N_loss, selector, f"saved_models/selector/{DATASET}.pth")
+                early_stopping(avg_last_N_loss, selector, f"saved_models/selector/{args.dset}.pth")
 
             if early_stopping.early_stop:
                 print("Early stopping")
@@ -120,7 +120,7 @@ def train(args):
             output_dim=D
         )
         test_model.load_state_dict(
-            torch.load(f"saved_models/selector/{DATASET}.pth", weights_only=True)
+            torch.load(f"saved_models/selector/{args.dset}.pth", weights_only=True)
         )
         print("模型训练&加载测试通过！")
     except Exception as e:
