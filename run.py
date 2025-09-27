@@ -27,6 +27,7 @@ parser.add_argument('--test', action='store_true', default=False, help='test the
 parser.add_argument('--dset', type=str, default='HTV2', help='dataset name')
 parser.add_argument('--dset_size', type=int, default=20552, help='dataset size')
 parser.add_argument('--train_dset_path', type=str, default='./dataset/5138', help='selector training dataset path')
+parser.add_argument('--ensemble_mode', type=str, default='selection', help='ensemble mode: selection or stacking')
 
 args = parser.parse_args()
 args.modelA = args.modelB = args.dset

@@ -5,7 +5,7 @@ from src.data.utils import *
 
 import warnings
 from torch.utils.data import DataLoader, TensorDataset
-from config import selector_patch_len as patch_len
+from config import selector_patch_len as patch_len, SAVED_MODELS_DIR
 from src.models.Selector.Selector import Selector as Selector
 from utils.tools import EarlyStopping
 
@@ -26,7 +26,8 @@ def save_model(model, path):
 
 def train(args):
     # 初始化环境
-    os.makedirs("./saved_models", exist_ok=True)
+    save_path = os.path.join(SAVED_MODELS_DIR, "selector", args.ensemble_mode)
+    os.makedirs(save_path, exist_ok=True)
     torch.manual_seed(42)
 
     # 生成训练数据
@@ -60,14 +61,24 @@ def train(args):
 
 #=========================================================================================#
 
+    if args.ensemble_mode == 'selection':
+        print("训练selection模式的选择器")
+        criterion = torch.nn.BCELoss()
+        output_dim = D
+    elif args.ensemble_mode == 'stacking':
+        print("训练stacking模式的选择器")
+        labels = trues.reshape(N * L // patch_len, patch_len * D)  # (N * L // patch_len, patch_len * D)
+        criterion = torch.nn.MSELoss()
+        output_dim = patch_len * D
+
     selector = Selector(
         input_dim = features.shape[1],
-        output_dim=D
+        output_dim=output_dim,
+        mode = args.ensemble_mode
     )
 
     # 训练配置
     optimizer = torch.optim.Adam(selector.parameters(), lr=0.001)
-    criterion = torch.nn.BCELoss()
 
     dataset = TensorDataset(torch.FloatTensor(features), torch.FloatTensor(labels))
     loader = DataLoader(dataset, batch_size=32, shuffle=True)
@@ -95,7 +106,7 @@ def train(args):
                     print("Learning rate:", optimizer.param_groups[0]['lr'], end=" -> ")
                     print(optimizer.param_groups[0]['lr'])
 
-                early_stopping(avg_last_N_loss, selector, f"saved_models/selector/{args.dset}.pth")
+                early_stopping(avg_last_N_loss, selector, path=os.path.join(save_path, f"{args.dset}.pth"))
 
             if early_stopping.early_stop:
                 print("Early stopping")
@@ -117,10 +128,11 @@ def train(args):
     try:
         test_model = Selector(
             input_dim = features.shape[1],
-            output_dim=D
+            output_dim=output_dim,
+            mode = args.ensemble_mode
         )
         test_model.load_state_dict(
-            torch.load(f"saved_models/selector/{args.dset}.pth", weights_only=True)
+            torch.load(os.path.join(save_path, f"{args.dset}.pth"), weights_only=True)
         )
         print("模型训练&加载测试通过！")
     except Exception as e:
