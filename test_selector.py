@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 import torch
 from src.data.utils import *
 import os
@@ -6,13 +7,16 @@ from config import selector_patch_len as patch_len, THRESHOLD
 from src.models.Selector.Selector import Selector as Selector
 
 def save_results(results):
-    path = f"./results/{DATASET_SIZE}/{DATASET}.txt"
+    path = f"./results/{DATASET_SIZE}/{DATASET}.csv"
     os.makedirs(os.path.dirname(path), exist_ok=True)
-    with open(path, "w") as f:
-        f.write(f"Dataset: {DATASET}\n")
-        f.write("mse:\n")
-        # 纵向
-        f.write("\n".join([f"{v:.8f}" for v in results]) + "\n")
+
+    average = f"{np.mean(results):.6f}"
+    results = [f"{v:.6f}" for v in results]
+    df = pd.DataFrame({
+        "mse": results,
+        "average": [average] + [""] * (len(results) - 1)
+    })
+    df.to_csv(path, index=False)
     print(f"结果已保存到 {path}")
 
 
@@ -32,7 +36,7 @@ def print_report(mse_A, mse_B, mse_ensemble):
 
     print(f"last_3_improvement: {last_3_improvement:.2f}%")
     
-    save_results(mse_ensemble)
+    # save_results(mse_ensemble)
 
     return last_3_improvement
 
@@ -80,6 +84,9 @@ def test(args):
     mse_dims_vals_A = metric(predA, trues)
     mse_dims_vals_B = metric(predB, trues)
     mse_dims_vals_ensemble = metric(pred_ensemble, trues)
+
+    save_results(mse_on_epochs(pred_ensemble, trues))
+
 
     return print_report(mse_dims_vals_A, mse_dims_vals_B, mse_dims_vals_ensemble)
 

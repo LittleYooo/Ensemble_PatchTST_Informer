@@ -25,7 +25,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--train', action='store_true', default=False, help='train the selector model')
 parser.add_argument('--test', action='store_true', default=False, help='test the selector model')
 parser.add_argument('--dset', type=str, default='HTV2', help='dataset name')
-parser.add_argument('--dset_size', type=int, default=5138, help='dataset size')
+parser.add_argument('--dset_size', type=int, default=20552, help='dataset size')
 parser.add_argument('--train_dset_path', type=str, default='./dataset/5138', help='selector training dataset path')
 
 args = parser.parse_args()

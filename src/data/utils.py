@@ -49,6 +49,13 @@ def metric(pred, true, flag=0):
 
     return mse_dims_vals
 
+def mse_on_epochs(pred, true):
+    mse_epochs = []
+    for i in range(pred.shape[0]):
+        mse_epoch = MSE(pred[i], true[i])
+        mse_epochs.append(mse_epoch)
+    return mse_epochs
+
 def cache(predA, predB, trues, cached_path):
     os.makedirs("./cached", exist_ok=True)
     np.savez(cached_path, predA=predA, predB=predB, trues=trues)
