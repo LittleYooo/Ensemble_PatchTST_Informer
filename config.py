@@ -5,5 +5,5 @@ MODEL_B_DIR = f"{SAVED_MODELS_DIR}/PatchTST"
 DATA_PATH = "./dataset"
 
 """ selector配置 """
-selector_patch_len = 10     # factor of 100
-THRESHOLD = 0.50
+selector_patch_len = 5     # factor of 100
+THRESHOLD = 0.55

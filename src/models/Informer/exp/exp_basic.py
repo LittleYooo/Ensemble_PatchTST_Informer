@@ -8,6 +8,7 @@ class Exp_Basic(object):
         self.args = args
         self.device = self._acquire_device()
         self.model = self._build_model().to(self.device)
+        self.model.load_state_dict(torch.load(os.path.join(self.args.checkpoints, f"{self.args.model_id}.pth")))
 
     def _build_model(self):
         raise NotImplementedError

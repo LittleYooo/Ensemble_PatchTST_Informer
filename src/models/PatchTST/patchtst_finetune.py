@@ -25,7 +25,7 @@ def get_model(c_in, args, head_type, weight_path=None):
     """
     # get number of patches
     num_patch = (max(args.context_points, args.patch_len)-args.patch_len) // args.stride + 1    
-    print('number of patches:', num_patch)
+    # print('number of patches:', num_patch)
     
     # get model
     model = PatchTST(c_in=c_in,
@@ -52,20 +52,53 @@ def get_model(c_in, args, head_type, weight_path=None):
 
 def test_func(weight_path, args, flag='test'):
     # get dataloader
-    print(f"loading {flag} data")
+    # print(f"loading {flag} data")
+    args.flag = flag
     dls = get_dls(args)
     model = get_model(dls.vars, args, head_type='prediction').to('cuda')
     # get callbacks
     cbs = [RevInCB(dls.vars, denorm=True)] if args.revin else []
     cbs += [PatchCB(patch_len=args.patch_len, stride=args.stride)]
-    learn = Learner(dls, model,cbs=cbs)
+    learn = Learner( model, weight_path=weight_path+'.pth', dls=dls, cbs=cbs)
     dl = dls.test if flag=='test' else dls.valid
-    print(flag, len(dl.dataset))
-    out  = learn.test(dl, weight_path=weight_path+'.pth', scores=[mse,mae])         # out: a list of [pred, targ, score]
+    # print(flag, len(dl.dataset))
+    out  = learn.test(dl)         # out: a list of [pred, targ, score]
     # save results
     # pd.DataFrame(np.array(out[2]).reshape(1,-1), columns=['mse','mae']).to_csv(args.save_path + args.save_finetuned_model + '_acc.csv', float_format='%.6f', index=False)
     # # save target results
     # save_format_result(out)
+    return out
+
+def predict_func(weight_path, args, flag='test'):
+    # get dataloader
+    model = get_model(args.vars, args, head_type='prediction').to('cuda')
+    dlss = get_dls_pred(args)
+    results=[]
+    for file_name, dls in dlss.items():
+        print(f"Processing {file_name}")
+        if args.TTA_ENABLE and args.is_test==2:        
+            adapter = build_adapter(args, dls, model, weight_path)
+            out = adapter.adapt() 
+        else:  
+        # get callbacks
+            cbs = [RevInCB(args.vars, denorm=True)] if args.revin else []
+            cbs += [PatchCB(patch_len=args.patch_len, stride=args.stride)]
+            learn = Learner(dls, model,cbs=cbs)
+            out  = learn.test(dls.test, weight_path=weight_path+'.pth', scores=[mse])         # out: a list of [pred, targ, score]
+        # save results
+        # pd.DataFrame(np.array(out[2]).reshape(1,-1), columns=['mse']).to_csv(args.result_path + args.save_finetuned_model + '_acc.csv', float_format='%.6f', index=False)
+        # save target results
+        # save_format_result(out)
+        average_value = float(np.array([item[0] for item in out[3]]).mean())
+        results.append({
+            '轨迹': file_name,
+            'MSE': average_value,
+        })
+    args.result_path = 'saved_results/' + '/pred/'+ args.dset_finetune + '/'
+    os.makedirs(args.result_path, exist_ok=True)
+    pd.DataFrame(results).to_csv(args.result_path  + args.save_finetuned_model + '_acc.csv', float_format='%.6f', index=False)
+    print('results saved:')
+    print(args.result_path + args.save_finetuned_model + '_acc.csv')
     return out
 
 

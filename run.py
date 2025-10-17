@@ -24,9 +24,10 @@ import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument('--train', action='store_true', default=False, help='train the selector model')
 parser.add_argument('--test', action='store_true', default=False, help='test the selector model')
+parser.add_argument('--do_pred', action='store_true', default=False, help='test the selector model')
 parser.add_argument('--dset', type=str, default='HTV2', help='dataset name')
-parser.add_argument('--dset_size', type=int, default=20552, help='dataset size')
-parser.add_argument('--train_dset_path', type=str, default='./dataset/5138', help='selector training dataset path')
+parser.add_argument('--dset_size', type=str, default='custom_data', help='dataset size:20552')
+parser.add_argument('--train_dset_path', type=str, default='./dataset/custom_data', help='selector training dataset path')
 parser.add_argument('--ensemble_mode', type=str, default='selection', help='ensemble mode: selection or stacking')
 
 args = parser.parse_args()
@@ -37,7 +38,6 @@ random.seed(fix_seed)
 torch.manual_seed(fix_seed)
 np.random.seed(fix_seed)
 
-
 if args.train:
     print("训练选择器模型...")
     args.root_path = args.train_dset_path
@@ -45,4 +45,7 @@ if args.train:
 if args.test:
     print("测试选择器模型...")
     args.root_path = os.path.join(DATA_PATH, str(args.dset_size))
-    test_selector.test(args)
+    if args.do_pred:
+        test_selector.predict(args)
+    else:
+        test_selector.test(args)

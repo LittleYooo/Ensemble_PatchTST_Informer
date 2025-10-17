@@ -23,7 +23,7 @@ from unittest.mock import patch
 
 class Learner(GetAttr):
 
-    def __init__(self, dls, model, 
+    def __init__(self, model, weight_path=None, dls=None,  
                         loss_func=None, 
                         lr=1e-3, 
                         cbs=None, 
@@ -35,6 +35,7 @@ class Learner(GetAttr):
         self.opt_func = opt_func
         #self.opt = self.opt_func(self.model.parameters(), self.lr) 
         self.set_opt()
+        self.load(weight_path)
         
         self.metrics = metrics
         self.n_inp  = 2
@@ -278,11 +279,12 @@ class Learner(GetAttr):
         self('after_test')   
         self.preds, self.targets = to_numpy([cb.preds, cb.targets])
         
+        return self.preds, self.targets
         # calculate Wasserstein distance
-        avg_w_dist, dim_w_dist = self.compute_wasserstein_distance(
-            self.preds.reshape(-1, self.preds.shape[2]),
-            self.targets.reshape(-1, self.preds.shape[2])
-        )
+        # avg_w_dist, dim_w_dist = self.compute_wasserstein_distance(
+        #     self.preds.reshape(-1, self.preds.shape[2]),
+        #     self.targets.reshape(-1, self.preds.shape[2])
+        # )
         
         if scores:
             # calculate avg scores

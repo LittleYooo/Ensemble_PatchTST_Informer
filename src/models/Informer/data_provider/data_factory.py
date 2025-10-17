@@ -44,6 +44,7 @@ def data_provider(args, flag):
         root_path=args.root_path,
         data_path=args.data_path,
         flag=flag,
+        do_pred=args.do_pred,
         size=[args.seq_len, args.label_len, args.pred_len],
         features=args.features,
         target=args.target,
@@ -51,7 +52,7 @@ def data_provider(args, flag):
         freq=freq,
         train_only=train_only
     )
-    print(flag, len(data_set))
+    # print(flag, len(data_set))
     data_loader = DataLoader(
         data_set,
         batch_size=batch_size,

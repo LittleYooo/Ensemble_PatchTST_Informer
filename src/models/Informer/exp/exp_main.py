@@ -218,14 +218,15 @@ class Exp_Main(Exp_Basic):
 
         return self.model
 
-    def test(self, setting, test=0, data_flag='test'):
-        print(f"loading {data_flag} data")
+    def test(self, args, setting, test=0, data_flag='test'):
+        # print(f"loading {data_flag} data")
+        self.args = args
         if data_flag == 'val': data_flag = 'val2'
         test_data, test_loader = self._get_data(flag=data_flag)
         
-        if test:
-            # self.model.load_state_dict(torch.load(os.path.join(f'./saved_models/Informer/{self.args.model_id}.pth')))
-            self.model.load_state_dict(torch.load(os.path.join(self.args.checkpoints, f"{self.args.model_id}.pth")))
+        # if test:
+        #     # self.model.load_state_dict(torch.load(os.path.join(f'./saved_models/Informer/{self.args.model_id}.pth')))
+        #     self.model.load_state_dict(torch.load(os.path.join(self.args.checkpoints, f"{self.args.model_id}.pth")))
 
         preds = []
         trues = []
@@ -322,50 +323,8 @@ class Exp_Main(Exp_Basic):
         # if not os.path.exists(folder_path):
         #     os.makedirs(folder_path)
 
-        mae, mse, mse_dims_vals, w_dist, w_dist_dims= metric(preds, trues)
-        return preds, trues, mse_dims_vals
-        w_dist_dims = np.array(w_dist_dims).round(8).tolist()
-
-        print('mse:{}, mae:{}, wdist:{}'.format(mse, mae, w_dist))
-        print('\n')
-        print('mse_dims:{}'.format(mse_dims_vals))
-        print('\n')
-        print('mse_control:{}'.format(sum(mse_dims_vals[-3:])/3))
-        print('\n')
-        print('mae_dims:{}'.format(mae_dims_vals))
-        print('\n')
-        print('mae_control:{}'.format(sum(mae_dims_vals[-3:])/3))
-        print('\n')
-        print('wdist_dims:{}'.format(w_dist_dims))
-        print('\n')
-        print('wdist_state:{}'.format(sum(w_dist_dims[:6])/6))
-        print('\n')
-        # print('wdist_state_scaler:{}'.format(w_dist_scaler))
-        # print('\n')
-
-        f = open(folder_path + "result.txt", 'a')
-        f.write(setting + "  \n")
-        f.write('mse:{}, mae:{}, wdist:{}'.format(mse, mae, w_dist))
-        f.write('\n')
-        f.write('mse_dims:{}'.format(mse_dims_vals))
-        f.write('\n')
-        f.write('mse_control:{}'.format(sum(mse_dims_vals[-3:])/3))
-        f.write('\n')
-        f.write('wdist_dims:{}'.format(w_dist_dims))
-        f.write('\n')
-        f.write('wdist_state:{}'.format(sum(w_dist_dims[:3])/3))
-        f.write('\n')
-        # f.write('wdist_state_scaler:{}'.format(w_dist_scaler))
-        # f.write('\n')
-        f.write('\n')
-        f.close()
-
-        # np.save(folder_path + 'metrics.npy', np.array([mae, mse, rmse, mape, mspe,rse, corr]))
-        np.save(folder_path + 'pred.npy', preds)
-        # np.save(folder_path + 'true.npy', trues)
-        # np.save(folder_path + 'x.npy', inputx)       (os.path.join('./results/' + setting, 'acc.csv'))
-        # pd.DataFrame(np.array([mse, mae]).reshape(1,-1), columns=['mse','mae']).to_csv(os.path.join('./results/' + setting, 'acc.csv'), float_format='%.6f', index=False)
-        return
+        # mae, mse, mse_dims_vals, w_dist, w_dist_dims= metric(preds, trues)
+        return preds, trues#, mse_dims_vals
 
     def predict(self, setting, load=False):
         pred_data, pred_loader = self._get_data(flag='pred')

@@ -32,6 +32,9 @@ python run.py --train --dset s0.3548_m907
 python run.py --train --dset CAV-H
 
 python run.py --train --dset HTV2
+
+python run.py --train --dset custom_data_01
+
 ```
 
 #### 测试模型
@@ -43,6 +46,8 @@ python run.py --test --dset s0.3548_m907 --dset_size 5138
 python run.py --test --dset HTV2 --dset_size 10276
 
 python run.py --test --dset CAV-H --dset_size 20552
+
+python run.py --test --dset custom_data_01 --dset_size custom_data --do_pred
 ```
 
 ### 使用陪试模型(stacking)

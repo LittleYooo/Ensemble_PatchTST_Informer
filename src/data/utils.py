@@ -15,7 +15,7 @@ def get_predictions(args, flag = 'test'):
     argsA = get_argsA(args)
     print(f"loading model A: {MODEL_A_DIR}/{args.modelA}")
     exp = Exp_Main(argsA)
-    predA, trues, mse_dim_vals_A = exp.test(setting="", test=1, data_flag=flag)  # informer
+    predA, trues = exp.test(argsA, setting="", test=1, data_flag=flag)  # informer
     print(f"predA shape: {predA.shape}")
 
     torch.cuda.empty_cache()
@@ -27,7 +27,7 @@ def get_predictions(args, flag = 'test'):
     predB = B_out[0]
     trues2 = B_out[1]
     assert np.allclose(trues, trues2), "模型A和B的真实值不匹配"
-    mse_dim_vals_B = B_out[2][0].tolist()
+    # mse_dim_vals_B = B_out[2][0].tolist()
     
     print(f"predB shape: {predB.shape}")
     torch.cuda.empty_cache()
@@ -62,11 +62,16 @@ def cache(predA, predB, trues, cached_path):
     print(f"predictions cached to {cached_path}")
 
 def get_argsA(args):
+    if args.do_pred or args.train:
+        data_path=f"{args.dset}.txt"
+    else:
+        data_path=f"{args.dset}.csv"
     argsA = SimpleNamespace(
         is_training=0,
         train_only=False,
+        do_pred=args.do_pred,
         root_path=args.root_path,
-        data_path=f"{args.dset}.csv",
+        data_path=data_path,
         model_id=args.modelA,
         model="Informer",
         data="custom",
@@ -118,6 +123,7 @@ def get_argsB(args):
     argsB = SimpleNamespace(
         is_finetune=0,
         is_linear_probe=0,
+        do_pred=args.do_pred,
         dset_finetune=args.dset,
         context_points=100,
         target_points=100,
