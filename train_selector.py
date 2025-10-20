@@ -145,7 +145,7 @@ def train(args):
         elif args.ensemble_mode == 'stacking':
             criterion = torch.nn.MSELoss()
             output_dim = patch_len * D
-            labels = labels.reshape(N * L // patch_len, patch_len * D)  # 适配stacking的输出维度
+            labels = trues.reshape(N * L // patch_len, patch_len * D)  # 适配stacking的输出维度
 
         selector = Selector(
             input_dim = features.shape[1],
